@@ -1,0 +1,33 @@
+{
+  "name": "arcivo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Arcivo — Personal Internet Archive and Digital Knowledge Management System",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run start:dev --workspace=apps/api",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "dev": "npm run dev:api",
+    "build:api": "npm run build --workspace=apps/api",
+    "build:web": "npm run build --workspace=apps/web",
+    "build:extension": "npm run build --workspace=apps/extension",
+    "build": "npm run build:api && npm run build:web && npm run build:extension",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  },
+  "keywords": [
+    "personal-archive",
+    "knowledge-management",
+    "full-stack",
+    "nestjs",
+    "react",
+    "chrome-extension",
+    "postgresql"
+  ],
+  "author": "Haseeb Jalil, Taimur Sajid, M. Uzair, Sharuf Khan",
+  "license": "MIT"
+}
+
