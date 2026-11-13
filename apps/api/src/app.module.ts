@@ -7,7 +7,10 @@ import { ScraperModule } from './modules/scraper/scraper.module.js';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env', 'apps/api/.env'],
+    }),
     DatabaseModule,
     ScraperModule,
   ],

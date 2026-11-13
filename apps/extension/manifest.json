@@ -13,14 +13,13 @@
     "default_title": "Archive this page to Arcivo"
   },
   "background": {
-    "service_worker": "src/background/service-worker.ts",
+    "service_worker": "assets/background.js",
     "type": "module"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["src/content/content.ts"]
+      "js": ["assets/content.js"]
     }
   ]
 }
-
