@@ -103,7 +103,7 @@ export function ResourceDrawer({ resource, folder, onClose, onToggleFavorite }: 
                     aria-label={resource.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
                     aria-pressed={resource.isFavorite}
                     className="rounded-lg border border-white/15 bg-black/25 p-1.5 text-white/90 backdrop-blur-md transition-colors hover:bg-black/35">
-                    <Star className={`h-3.5 w-3.5 ${resource.isFavorite ? 'fill-amber-300 text-amber-300' : ''}`} />
+                    <Star className={`h-3.5 w-3.5 ${resource.isFavorite ? 'fill-brand-cream-200 text-brand-cream-200' : ''}`} />
                   </button>
                   <button
                     type="button"
@@ -156,7 +156,7 @@ export function ResourceDrawer({ resource, folder, onClose, onToggleFavorite }: 
                   href={resource.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="group inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-3 py-2.5 text-[12px] font-semibold text-white shadow-lg shadow-indigo-600/25 transition-all hover:shadow-indigo-600/40">
+                  className="sheen group inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-brand-berry-600 via-brand-berry-500 to-brand-coral-500 px-3 py-2.5 text-[12px] font-semibold text-white shadow-lg shadow-brand-berry-600/25 transition-all hover:-translate-y-0.5 hover:shadow-brand-berry-600/40">
                   Open original
                   <ExternalLink className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                 </a>
@@ -192,8 +192,8 @@ export function ResourceDrawer({ resource, folder, onClose, onToggleFavorite }: 
               </div>
 
               {resource.note && (
-                <div className="mt-5 rounded-xl border border-amber-400/25 bg-amber-400/10 p-3.5">
-                  <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-600 dark:text-amber-300">
+                <div className="mt-5 rounded-xl border border-brand-caramel-400/30 bg-brand-caramel-400/10 p-3.5">
+                  <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-caramel-700 dark:text-brand-cream-300">
                     <StickyNote className="h-3 w-3" /> Your note
                   </div>
                   <p className="mt-1.5 text-[12px] font-semibold text-app-text">{resource.note.title}</p>

@@ -85,9 +85,9 @@ export function WorkspaceSidebar({
     <aside className="flex h-full w-[280px] shrink-0 flex-col border-r border-app-border/10 bg-app-panel/55 backdrop-blur-2xl lg:w-[264px]">
       <div className="flex items-center justify-between px-5 pb-4 pt-5">
         <div className="flex items-center gap-2.5">
-          <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-fuchsia-500 text-white shadow-lg shadow-indigo-600/30">
+          <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-berry-600 via-brand-berry-500 to-brand-coral-500 text-white shadow-lg shadow-brand-berry-600/25">
             <Bookmark className="h-4 w-4" />
-            <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border-2 border-app-panel bg-emerald-400" />
+            <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border-2 border-app-panel bg-brand-sage-400" />
           </span>
           <div>
             <p className="text-[13px] font-extrabold tracking-[0.2em] text-app-text">ARCIVO</p>
@@ -107,8 +107,8 @@ export function WorkspaceSidebar({
       <div className="px-3">
         <button
           onClick={onArchive}
-          className="group flex w-full items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-3.5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-indigo-600/25 transition-all hover:shadow-indigo-600/40">
-          <Plus className="h-4 w-4 transition-transform group-hover:rotate-90" />
+          className="sheen group flex w-full items-center gap-2 rounded-xl bg-gradient-to-r from-brand-berry-600 via-brand-berry-500 to-brand-coral-500 px-3.5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-brand-berry-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-brand-berry-600/40">
+          <Plus className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
           Archive a page
           <span className="ml-auto rounded-md bg-white/15 px-1.5 py-0.5 font-mono text-[9px] font-medium">N</span>
         </button>
@@ -207,11 +207,11 @@ export function WorkspaceSidebar({
       </div>
 
       <div className="border-t border-app-border/10 p-3">
-        <div className="mb-2 flex items-center justify-between rounded-xl bg-emerald-500/5 px-3 py-2">
-          <span className="flex items-center gap-1.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-300">
+        <div className="mb-2 flex items-center justify-between rounded-xl bg-brand-sage-400/10 px-3 py-2">
+          <span className="flex items-center gap-1.5 text-[10px] font-medium text-brand-sage-700 dark:text-brand-sage-200">
             <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-sage-400 opacity-75" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand-sage-500" />
             </span>
             Extension synced
           </span>
@@ -244,7 +244,7 @@ export function WorkspaceSidebar({
               className="h-8 w-8 rounded-full object-cover"
             />
           ) : (
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-600 to-fuchsia-500 text-[11px] font-bold text-white">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-brand-berry-600 to-brand-coral-500 text-[11px] font-bold text-white">
               {initials(user?.fullName ?? 'Arcivo')}
             </span>
           )}

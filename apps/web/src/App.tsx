@@ -398,8 +398,8 @@ export default function App() {
       <main className="relative min-w-0 flex-1 overflow-y-auto">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
           <div className="bg-grid mask-fade-b absolute inset-x-0 top-0 h-[520px] opacity-40" />
-          <div className="absolute -right-24 top-10 h-[360px] w-[360px] rounded-full bg-fuchsia-500/10 blur-[120px]" />
-          <div className="absolute -left-24 top-64 h-[320px] w-[320px] rounded-full bg-indigo-500/10 blur-[120px]" />
+          <div className="animate-drift-slow absolute -right-24 top-10 h-[360px] w-[360px] rounded-full bg-brand-coral-400/15 blur-[120px]" />
+          <div className="animate-drift absolute -left-24 top-64 h-[320px] w-[320px] rounded-full bg-brand-sage-400/20 blur-[120px] [animation-delay:-8s]" />
         </div>
 
         <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-4 sm:px-6 sm:pt-6 lg:px-9 lg:pt-8">
@@ -413,7 +413,7 @@ export default function App() {
                 <Menu className="h-4 w-4" />
               </button>
               <span className="flex items-center gap-1.5 text-[12px] font-extrabold tracking-[0.18em] text-app-text">
-                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-tr from-indigo-600 to-fuchsia-500 text-white">
+                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-tr from-brand-berry-600 to-brand-coral-500 text-white">
                   <FolderIcon className="h-3 w-3" />
                 </span>
                 ARCIVO
@@ -423,7 +423,7 @@ export default function App() {
               <button
                 onClick={() => setSaveOpen(true)}
                 aria-label="Archive a page"
-                className="rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-500 p-2 text-white shadow-lg shadow-indigo-600/25">
+                className="rounded-xl bg-gradient-to-r from-brand-berry-600 to-brand-coral-500 p-2 text-white shadow-lg shadow-brand-berry-600/25">
                 <Plus className="h-4 w-4" />
               </button>
               {user?.avatarUrl ? (
@@ -434,7 +434,7 @@ export default function App() {
                   className="h-8 w-8 rounded-full object-cover"
                 />
               ) : (
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-600 to-fuchsia-500 text-[10px] font-bold text-white">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-brand-berry-600 to-brand-coral-500 text-[10px] font-bold text-white">
                   {initials(user?.fullName ?? 'Arcivo')}
                 </span>
               )}
@@ -445,7 +445,7 @@ export default function App() {
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-app-subtle">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-sage-400" />
                 {now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
               </p>
               <h1 className="mt-2 text-[2rem] font-extrabold leading-[1.05] tracking-[-0.03em] text-app-text sm:text-[2.4rem]">
@@ -462,7 +462,7 @@ export default function App() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setSaveOpen(true)}
-                className="group inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-lg shadow-indigo-600/25 transition-all hover:-translate-y-0.5 hover:shadow-indigo-600/40">
+                className="sheen group inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-brand-berry-600 via-brand-berry-500 to-brand-coral-500 px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-lg shadow-brand-berry-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-brand-berry-600/45">
                 <Plus className="h-4 w-4 transition-transform group-hover:rotate-90" />
                 Archive a page
               </button>
@@ -478,14 +478,14 @@ export default function App() {
           {/* Stats */}
           <div className="mt-6 grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
             {[
-              { icon: Layers, label: 'Total saves', value: totalCount, tint: 'text-indigo-500', bg: 'bg-indigo-500/10' },
-              { icon: Star, label: 'Favorites', value: favoriteCount, tint: 'text-amber-500', bg: 'bg-amber-500/10' },
-              { icon: FolderIcon, label: 'Folders', value: folders.length, tint: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-              { icon: StickyNote, label: 'Notes', value: noteCount, tint: 'text-fuchsia-500', bg: 'bg-fuchsia-500/10' },
+              { icon: Layers, label: 'Total saves', value: totalCount, tint: 'text-brand-berry-500', bg: 'bg-brand-berry-500/10' },
+              { icon: Star, label: 'Favorites', value: favoriteCount, tint: 'text-brand-caramel-500', bg: 'bg-brand-caramel-500/10' },
+              { icon: FolderIcon, label: 'Folders', value: folders.length, tint: 'text-brand-sage-600', bg: 'bg-brand-sage-500/10' },
+              { icon: StickyNote, label: 'Notes', value: noteCount, tint: 'text-brand-coral-500', bg: 'bg-brand-coral-500/10' },
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-2xl border border-app-border/10 bg-app-card/40 p-3.5 backdrop-blur-xl">
+                className="hover-lift rounded-2xl border border-app-border/10 bg-app-card/40 p-3.5 backdrop-blur-xl">
                 <div className="flex items-center justify-between">
                   <span
                     className={`flex h-7 w-7 items-center justify-center rounded-lg ${stat.bg} ${stat.tint}`}>
@@ -719,9 +719,9 @@ export default function App() {
                     <button
                       key={resource.id}
                       onClick={() => setActiveId(resource.id)}
-                      className="group flex flex-col rounded-2xl border border-app-border/10 bg-app-card/45 p-4 text-left backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-400/30 hover:bg-app-card/70 hover:shadow-xl">
+                      className="group flex flex-col rounded-2xl border border-app-border/10 bg-app-card/45 p-4 text-left backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-caramel-400/40 hover:bg-app-card/70 hover:shadow-xl">
                       <div className="flex items-center justify-between">
-                        <span className="flex items-center gap-1.5 rounded-lg bg-amber-400/10 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-amber-600 dark:text-amber-300">
+                        <span className="flex items-center gap-1.5 rounded-lg bg-brand-caramel-400/15 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-brand-caramel-700 dark:text-brand-cream-300">
                           <StickyNote className="h-3 w-3" /> Note
                         </span>
                         <span className="text-[9px] text-app-subtle">{timeAgo(note.updatedAt)}</span>
@@ -764,10 +764,11 @@ export default function App() {
             view === 'grid' ? (
               <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 <AnimatePresence mode="popLayout" initial={false}>
-                  {filtered.map((resource) => (
+                  {filtered.map((resource, index) => (
                     <ResourceCard
                       key={resource.id}
                       resource={resource}
+                      index={index}
                       folder={folders.find((folder) => folder.id === resource.folderId)}
                       onToggleFavorite={toggleFavorite}
                       onOpen={setActiveId}
@@ -778,10 +779,11 @@ export default function App() {
             ) : (
               <div className="mt-4 flex flex-col gap-2.5">
                 <AnimatePresence mode="popLayout" initial={false}>
-                  {filtered.map((resource) => (
+                  {filtered.map((resource, index) => (
                     <ResourceCard
                       key={resource.id}
                       resource={resource}
+                      index={index}
                       folder={folders.find((folder) => folder.id === resource.folderId)}
                       onToggleFavorite={toggleFavorite}
                       onOpen={setActiveId}
@@ -818,7 +820,7 @@ export default function App() {
           {/* Footer */}
           <div className="mt-12 flex flex-col items-center justify-between gap-2 border-t border-app-border/10 pt-5 text-[9px] uppercase tracking-[0.16em] text-app-subtle sm:flex-row">
             <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              <span className="h-1.5 w-1.5 rounded-full bg-brand-sage-400" />
               Arcivo v1.0 · Reader copies kept
             </span>
             <span>Full Stack Web Development Lab · BSCS 5A</span>
@@ -853,8 +855,8 @@ export default function App() {
               <span
                 className={`flex h-6 w-6 items-center justify-center rounded-full ${
                   toast.tone === 'error'
-                    ? 'bg-rose-500/15 text-rose-500'
-                    : 'bg-emerald-500/15 text-emerald-500'
+                    ? 'bg-brand-berry-500/15 text-brand-berry-500'
+                    : 'bg-brand-sage-500/15 text-brand-sage-600 dark:text-brand-sage-300'
                 }`}>
                 {toast.tone === 'error' ? (
                   <AlertCircle className="h-3.5 w-3.5" />

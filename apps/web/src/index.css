@@ -2,42 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Arcivo theme tokens
+ * Core palette: sage #96B49E · cream #FFCEAB · coral #FF847C · raspberry #E84A5F · ink #2A363B
+ */
 :root {
   color-scheme: light;
 
-  --app-bg: 241 245 249;
-  --app-text: 15 23 42;
-  --app-muted: 71 85 105;
-  --app-subtle: 100 116 139;
-  --app-panel: 255 255 255;
+  --app-bg: 247 243 236;
+  --app-text: 42 54 59;
+  --app-muted: 73 85 87;
+  --app-subtle: 101 112 111;
+  --app-panel: 255 253 249;
   --app-card: 255 255 255;
-  --app-border: 15 23 42;
-  --app-hover: 15 23 42;
-  --app-accent: 79 70 229;
-  --app-accent-strong: 67 56 202;
-  --app-glow-1: 199 210 254;
-  --app-glow-2: 251 207 232;
-  --app-panel-alpha: 0.78;
-  --app-dock-alpha: 0.62;
+  --app-border: 42 54 59;
+  --app-hover: 42 54 59;
+  --app-accent: 232 74 95;
+  --app-accent-strong: 209 51 72;
+  --app-accent-soft: 255 206 171;
+  --app-sage: 150 180 158;
+  --app-cream: 255 206 171;
+  --app-coral: 255 132 124;
+  --app-ink: 42 54 59;
+  --app-glow-1: 214 231 217;
+  --app-glow-2: 255 226 203;
+  --app-glow-3: 255 214 208;
+  --app-panel-alpha: 0.76;
+  --app-dock-alpha: 0.6;
 }
 
 .dark {
   color-scheme: dark;
 
-  --app-bg: 2 6 23;
-  --app-text: 241 245 249;
-  --app-muted: 203 213 225;
-  --app-subtle: 148 163 184;
-  --app-panel: 15 23 42;
-  --app-card: 30 41 59;
+  --app-bg: 27 36 40;
+  --app-text: 244 240 232;
+  --app-muted: 198 206 202;
+  --app-subtle: 148 160 157;
+  --app-panel: 34 45 50;
+  --app-card: 42 54 59;
   --app-border: 255 255 255;
   --app-hover: 255 255 255;
-  --app-accent: 129 140 248;
-  --app-accent-strong: 79 70 229;
-  --app-glow-1: 67 56 202;
-  --app-glow-2: 126 34 206;
+  --app-accent: 255 132 124;
+  --app-accent-strong: 232 74 95;
+  --app-accent-soft: 76 55 54;
+  --app-sage: 150 180 158;
+  --app-cream: 255 206 171;
+  --app-coral: 255 132 124;
+  --app-ink: 42 54 59;
+  --app-glow-1: 52 74 62;
+  --app-glow-2: 92 58 46;
+  --app-glow-3: 84 42 46;
   --app-panel-alpha: 0.72;
-  --app-dock-alpha: 0.55;
+  --app-dock-alpha: 0.58;
 }
 
 @layer base {
@@ -55,31 +71,36 @@
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: rgb(var(--app-bg));
     background-image:
-      radial-gradient(1100px 700px at 0% 0%, rgb(var(--app-glow-1) / 0.55), transparent 60%),
-      radial-gradient(900px 650px at 100% 100%, rgb(var(--app-glow-2) / 0.45), transparent 55%);
+      radial-gradient(1100px 720px at 0% 0%, rgb(var(--app-glow-1) / 0.6), transparent 62%),
+      radial-gradient(900px 650px at 100% 8%, rgb(var(--app-glow-2) / 0.5), transparent 58%),
+      radial-gradient(1000px 700px at 50% 110%, rgb(var(--app-glow-3) / 0.42), transparent 60%);
     background-attachment: fixed;
     color: rgb(var(--app-text));
     min-height: 100vh;
+    transition: background-color 480ms ease, color 480ms ease;
   }
 
   ::selection {
-    background: rgb(var(--app-accent) / 0.25);
+    background: rgb(var(--app-accent) / 0.24);
+    color: rgb(var(--app-ink));
   }
 }
 
 /* Glassmorphism surfaces — colors come from the theme tokens above */
 .glass-panel {
   background: rgb(var(--app-panel) / var(--app-panel-alpha));
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
   border: 1px solid rgb(var(--app-border) / 0.1);
+  transition: background-color 480ms ease, border-color 480ms ease;
 }
 
 .glass-dock {
   background: rgb(var(--app-panel) / var(--app-dock-alpha));
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
   border: 1px solid rgb(var(--app-border) / 0.14);
+  transition: background-color 480ms ease, border-color 480ms ease;
 }
 
 ::-webkit-scrollbar {
@@ -123,7 +144,21 @@
  * ---------------------------------------------------------------- */
 
 .text-gradient {
-  background-image: linear-gradient(100deg, #6366f1 0%, #8b5cf6 40%, #d946ef 75%, #ec4899 100%);
+  background-image: linear-gradient(102deg, #e84a5f 0%, #ff847c 40%, #f0b487 70%, #96b49e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-warm {
+  background-image: linear-gradient(100deg, #d13348 0%, #e84a5f 35%, #ff847c 70%, #ffceab 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-cool {
+  background-image: linear-gradient(100deg, #2a363b 0%, #4f6b58 45%, #96b49e 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -161,7 +196,44 @@
 }
 
 .ring-conic {
-  background: conic-gradient(from 180deg, rgba(99, 102, 241, 0.55), rgba(217, 70, 239, 0.35), rgba(56, 189, 248, 0.45), rgba(99, 102, 241, 0.55));
+  background: conic-gradient(
+    from 180deg,
+    rgba(232, 74, 95, 0.55),
+    rgba(255, 132, 124, 0.4),
+    rgba(255, 206, 171, 0.5),
+    rgba(150, 180, 158, 0.45),
+    rgba(232, 74, 95, 0.55)
+  );
+}
+
+/* Soft sheen that sweeps once on hover — used on primary CTAs. */
+.sheen {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.sheen::after {
+  content: '';
+  position: absolute;
+  inset: -20% -40%;
+  z-index: 1;
+  background: linear-gradient(110deg, transparent 34%, rgba(255, 255, 255, 0.42) 50%, transparent 66%);
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+
+.sheen:hover::after {
+  animation: sheen 1.05s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-lift {
+  transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 44px -26px rgba(42, 54, 59, 0.45);
 }
 
 @keyframes float-y {
@@ -185,6 +257,32 @@
   66% { transform: translate3d(-5%, 4%, 0) scale(0.95); }
 }
 
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  40% { transform: translate3d(3%, -4%, 0) scale(1.06); }
+  70% { transform: translate3d(-4%, 3%, 0) scale(0.97); }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.04); }
+}
+
+@keyframes sheen {
+  from { transform: translateX(-130%); }
+  to { transform: translateX(130%); }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gradient-pan {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 @keyframes spin-slow {
   to { transform: rotate(360deg); }
 }
@@ -198,6 +296,14 @@
 .animate-float-sm { animation: float-y-sm 6s ease-in-out infinite; }
 .animate-marquee { animation: marquee 38s linear infinite; }
 .animate-aurora { animation: aurora 18s ease-in-out infinite; }
+.animate-drift { animation: drift 26s ease-in-out infinite; }
+.animate-drift-slow { animation: drift 38s ease-in-out infinite; }
+.animate-breathe { animation: breathe 7s ease-in-out infinite; }
+.animate-rise { animation: rise-in 620ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-pan 12s ease-in-out infinite;
+}
 .animate-spin-slow { animation: spin-slow 45s linear infinite; }
 .animate-shimmer {
   background-size: 200% 100%;
@@ -209,8 +315,21 @@
   .animate-float-sm,
   .animate-marquee,
   .animate-aurora,
+  .animate-drift,
+  .animate-drift-slow,
+  .animate-breathe,
+  .animate-rise,
+  .animate-gradient,
   .animate-spin-slow,
   .animate-shimmer {
     animation: none !important;
+  }
+
+  .sheen:hover::after {
+    animation: none !important;
+  }
+
+  .hover-lift:hover {
+    transform: none;
   }
 }

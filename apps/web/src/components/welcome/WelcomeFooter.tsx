@@ -18,7 +18,7 @@ export function WelcomeFooter() {
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-12 sm:px-8 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
           <Link to="/" className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-fuchsia-500 text-white shadow-lg shadow-indigo-600/30">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-berry-600 via-brand-berry-500 to-brand-coral-400 text-white shadow-lg shadow-brand-berry-600/25">
               <Bookmark className="h-4 w-4" />
             </span>
             <span className="text-sm font-extrabold tracking-[0.22em] text-app-text">ARCIVO</span>
@@ -74,7 +74,7 @@ export function WelcomeFooter() {
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-2 px-5 py-5 text-[10px] text-app-subtle sm:flex-row sm:px-8">
           <span>© 2026 Arcivo. Built for the semester project.</span>
           <span className="flex items-center gap-1.5">
-            Made with <Heart className="h-3 w-3 text-rose-500" /> NestJS, React &amp; PostgreSQL
+            Made with <Heart className="h-3 w-3 text-brand-berry-500" /> NestJS, React &amp; PostgreSQL
           </span>
         </div>
       </div>

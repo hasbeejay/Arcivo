@@ -27,11 +27,11 @@ const inputClass =
   'w-full rounded-xl border border-app-border/10 bg-app-hover/5 py-3 pl-11 pr-11 text-sm text-app-text placeholder:text-app-subtle outline-none transition-all focus:border-app-accent/40 focus:bg-app-panel/60 focus:ring-4 focus:ring-app-accent/15';
 
 const strengthMeta = [
-  { label: 'Too short', color: 'bg-rose-500', text: 'Use at least 8 characters.' },
-  { label: 'Weak', color: 'bg-rose-500', text: 'Add a number or symbol.' },
-  { label: 'Fair', color: 'bg-amber-500', text: 'Add an uppercase letter and a symbol.' },
-  { label: 'Good', color: 'bg-sky-500', text: 'Almost there — add a symbol.' },
-  { label: 'Strong', color: 'bg-emerald-500', text: 'Your archive is well protected.' },
+  { label: 'Too short', color: 'bg-brand-berry-500', text: 'Use at least 8 characters.' },
+  { label: 'Weak', color: 'bg-brand-berry-500', text: 'Add a number or symbol.' },
+  { label: 'Fair', color: 'bg-brand-caramel-500', text: 'Add an uppercase letter and a symbol.' },
+  { label: 'Good', color: 'bg-brand-mist-500', text: 'Almost there — add a symbol.' },
+  { label: 'Strong', color: 'bg-brand-sage-500', text: 'Your archive is well protected.' },
 ];
 
 function passwordScore(password: string): number {
@@ -95,15 +95,15 @@ export default function AuthPage() {
       {/* Background */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="bg-grid mask-fade-b absolute inset-x-0 top-0 h-[620px] opacity-40" />
-        <div className="animate-aurora absolute -left-24 top-16 h-[420px] w-[420px] rounded-full bg-indigo-500/20 blur-[120px]" />
-        <div className="animate-aurora absolute -right-20 bottom-0 h-[380px] w-[380px] rounded-full bg-fuchsia-500/15 blur-[120px] [animation-delay:-7s]" />
-        <div className="absolute left-1/2 top-1/3 h-[300px] w-[520px] -translate-x-1/2 rounded-full bg-violet-500/10 blur-[110px]" />
+        <div className="animate-aurora absolute -left-24 top-16 h-[420px] w-[420px] rounded-full bg-brand-sage-400/30 blur-[120px]" />
+        <div className="animate-drift-slow absolute -right-20 bottom-0 h-[380px] w-[380px] rounded-full bg-brand-cream-400/35 blur-[120px]" />
+        <div className="animate-drift absolute left-1/2 top-1/3 h-[300px] w-[520px] -translate-x-1/2 rounded-full bg-brand-coral-400/20 blur-[110px] [animation-delay:-7s]" />
       </div>
 
       <header className="absolute inset-x-0 top-0 z-30">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-5 sm:px-8">
           <Link to="/" className="group flex items-center gap-2.5" aria-label="Arcivo home">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-fuchsia-500 text-white shadow-lg shadow-indigo-600/30 transition-transform duration-300 group-hover:scale-105">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-berry-600 via-brand-berry-500 to-brand-coral-400 text-white shadow-lg shadow-brand-berry-600/25 transition-transform duration-300 group-hover:scale-105">
               <Bookmark className="h-4 w-4" />
             </span>
             <span className="text-sm font-extrabold tracking-[0.22em] text-app-text">ARCIVO</span>
@@ -144,9 +144,9 @@ export default function AuthPage() {
           <div className="relative">
             <div
               aria-hidden="true"
-              className="absolute -inset-px rounded-[2rem] bg-gradient-to-tr from-indigo-500/30 via-transparent to-fuchsia-500/25"
+              className="absolute -inset-px rounded-[2rem] bg-gradient-to-tr from-brand-berry-500/30 via-brand-cream-400/20 to-brand-sage-400/25"
             />
-            <div className="glass-panel noise relative overflow-hidden rounded-[2rem] p-6 shadow-[0_40px_100px_-40px_rgba(30,27,75,0.55)] sm:p-8">
+            <div className="glass-panel noise relative overflow-hidden rounded-[2rem] p-6 shadow-[0_40px_100px_-40px_rgba(42,54,59,0.45)] sm:p-8">
               <div className="mb-5">
                 <GoogleSignInButton
                   onCredential={(credential) => void loginWithGoogle(credential)}
@@ -353,7 +353,7 @@ export default function AuthPage() {
                   type="submit"
                   disabled={busy}
                   whileTap={reduced ? undefined : { scale: 0.99 }}
-                  className="group relative mt-5 flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-600/30 transition-shadow hover:shadow-indigo-600/50 disabled:cursor-not-allowed disabled:opacity-70">
+                  className="group relative mt-5 flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-brand-berry-600 via-brand-berry-500 to-brand-coral-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-berry-600/30 transition-all hover:-translate-y-0.5 hover:shadow-brand-berry-600/45 disabled:cursor-not-allowed disabled:opacity-70">
                   {busy ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -380,7 +380,7 @@ export default function AuthPage() {
               </p>
 
               <div className="mt-5 flex items-center justify-center gap-1.5 border-t border-app-border/10 pt-4 text-[9px] text-app-subtle">
-                <ShieldCheck className="h-3 w-3 text-emerald-500" />
+                <ShieldCheck className="h-3 w-3 text-brand-sage-600" />
                 Passwords hashed with bcrypt · sessions secured with JWT
               </div>
             </div>

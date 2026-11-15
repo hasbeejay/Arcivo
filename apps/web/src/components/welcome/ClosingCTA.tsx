@@ -11,11 +11,11 @@ export function ClosingCTA() {
   return (
     <section className="relative px-5 pb-20 pt-6 sm:px-8 sm:pb-28">
       <Reveal>
-        <div className="noise relative mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-app-border/10 bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 px-6 py-16 text-center shadow-[0_40px_120px_-30px_rgba(99,102,241,0.65)] sm:px-12 sm:py-20">
+        <div className="noise animate-gradient relative mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-brand-berry-700 via-brand-berry-600 to-brand-coral-500 px-6 py-16 text-center shadow-[0_40px_120px_-30px_rgba(174,39,57,0.55)] sm:px-12 sm:py-20">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <div className="bg-dots absolute inset-0 opacity-20" />
-            <div className="absolute -left-16 -top-16 h-64 w-64 rounded-full bg-white/15 blur-3xl" />
-            <div className="absolute -bottom-20 -right-10 h-72 w-72 rounded-full bg-fuchsia-300/20 blur-3xl" />
+            <div className="animate-breathe absolute -left-16 -top-16 h-64 w-64 rounded-full bg-brand-cream-300/25 blur-3xl" />
+            <div className="animate-drift absolute -bottom-20 -right-10 h-72 w-72 rounded-full bg-brand-sage-300/25 blur-3xl" />
             <motion.div
               animate={reduced ? undefined : { y: [0, -14, 0], rotate: [0, 6, 0] }}
               transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
@@ -40,28 +40,28 @@ export function ClosingCTA() {
               <span className="font-display block italic text-white/95">worth remembering.</span>
             </h2>
 
-            <p className="mx-auto mt-5 max-w-lg text-balance text-sm leading-relaxed text-white/75 sm:text-base">
+            <p className="mx-auto mt-5 max-w-lg text-balance text-sm leading-relaxed text-white/90 sm:text-base">
               One account connects your workspace and your browser. Save the first page in under a minute.
             </p>
 
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
                 to="/auth?mode=signup"
-                className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-bold text-indigo-700 shadow-xl transition-transform hover:-translate-y-0.5 sm:w-auto">
+                className="sheen group inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-cream-50 px-6 py-3.5 text-sm font-bold text-brand-berry-700 shadow-xl transition-all duration-300 hover:-translate-y-0.5 sm:w-auto">
                 Create your free account
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
                 to="/auth"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur transition-colors hover:bg-white/20 sm:w-auto">
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/40 bg-brand-berry-900/25 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur transition-colors hover:bg-brand-berry-900/40 sm:w-auto">
                 I already have one
               </Link>
             </div>
 
-            <ul className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-white/70">
+            <ul className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-white/85">
               {promises.map((promise) => (
                 <li key={promise} className="flex items-center gap-1.5">
-                  <Check className="h-3 w-3 text-emerald-300" />
+                  <Check className="h-3 w-3 text-brand-sage-200" />
                   {promise}
                 </li>
               ))}

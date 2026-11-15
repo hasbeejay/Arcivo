@@ -41,7 +41,7 @@ export interface WorkspaceResource {
   note?: WorkspaceNote;
 }
 
-export const folderPalette = ['#10B981', '#EC4899', '#6366F1', '#F59E0B', '#0EA5E9', '#8B5CF6'];
+export const folderPalette = ['#7B9F86', '#E84A5F', '#FF847C', '#B57A4C', '#6C999C', '#96B49E'];
 
 export const kindMeta: Record<
   ResourceKind,
@@ -49,37 +49,37 @@ export const kindMeta: Record<
 > = {
   article: {
     label: 'Article',
-    gradient: 'from-indigo-500 via-violet-500 to-fuchsia-500',
+    gradient: 'from-brand-berry-600 via-brand-berry-500 to-brand-coral-500',
     icon: FileText,
     note: 'Reader copy saved',
   },
   video: {
     label: 'Video',
-    gradient: 'from-rose-500 via-red-500 to-orange-400',
+    gradient: 'from-brand-berry-700 via-brand-berry-600 to-brand-caramel-500',
     icon: PlayCircle,
     note: 'Transcript captured',
   },
   book: {
     label: 'Book',
-    gradient: 'from-amber-500 via-orange-500 to-rose-500',
+    gradient: 'from-brand-caramel-600 via-brand-caramel-500 to-brand-berry-600',
     icon: BookOpen,
     note: 'Chapters indexed',
   },
   paper: {
     label: 'Paper',
-    gradient: 'from-sky-500 via-cyan-500 to-blue-600',
+    gradient: 'from-brand-teal-700 via-brand-teal-600 to-brand-mist-500',
     icon: ScrollText,
     note: 'Abstract summarized',
   },
   code: {
     label: 'Code',
-    gradient: 'from-emerald-500 via-teal-500 to-cyan-500',
+    gradient: 'from-brand-sage-700 via-brand-sage-600 to-brand-teal-600',
     icon: Code2,
     note: 'Repo snapshot saved',
   },
   thread: {
     label: 'Thread',
-    gradient: 'from-slate-600 via-slate-700 to-slate-900',
+    gradient: 'from-brand-ink-800 via-brand-ink-700 to-brand-ink-600',
     icon: MessagesSquare,
     note: 'Thread flattened',
   },

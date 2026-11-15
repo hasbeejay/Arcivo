@@ -21,7 +21,7 @@ function CardShell({ children, className = '' }: { children: ReactNode; classNam
       intensity={4}>
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-tr from-indigo-500/15 to-fuchsia-500/15 opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100"
+        className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-tr from-brand-berry-500/20 via-brand-coral-400/15 to-brand-cream-400/25 opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100"
       />
       {children}
     </TiltCard>
@@ -48,7 +48,7 @@ export function BentoFeatures() {
   return (
     <section id="features" className="relative py-20 sm:py-28">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute left-1/2 top-10 h-[300px] w-[600px] -translate-x-1/2 rounded-full bg-indigo-500/10 blur-[120px]" />
+        <div className="animate-drift-slow absolute left-1/2 top-10 h-[300px] w-[600px] -translate-x-1/2 rounded-full bg-brand-sage-400/20 blur-[120px]" />
       </div>
 
       <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
@@ -142,7 +142,7 @@ export function BentoFeatures() {
                 <div className="w-full shrink-0 sm:w-52">
                   <div className="rounded-2xl border border-app-border/10 bg-app-panel/80 p-3 shadow-lg">
                     <div className="flex items-center gap-1.5 text-[9px] font-semibold text-app-text">
-                      <span className="flex h-4 w-4 items-center justify-center rounded-md bg-gradient-to-tr from-indigo-500 to-fuchsia-500 text-white">
+                      <span className="flex h-4 w-4 items-center justify-center rounded-md bg-gradient-to-tr from-brand-berry-600 to-brand-coral-500 text-white">
                         <Sparkles className="h-2.5 w-2.5" />
                       </span>
                       AI takeaways
@@ -219,10 +219,10 @@ export function BentoFeatures() {
               </p>
               <div className="mt-4 flex flex-wrap gap-1.5">
                 {[
-                  { label: 'Research', color: '#10B981' },
-                  { label: 'University', color: '#EC4899' },
-                  { label: 'Web Dev', color: '#6366F1' },
-                  { label: 'Inspiration', color: '#F59E0B' },
+                  { label: 'Research', color: '#7B9F86' },
+                  { label: 'University', color: '#E84A5F' },
+                  { label: 'Web Dev', color: '#6C999C' },
+                  { label: 'Inspiration', color: '#B57A4C' },
                 ].map((folder) => (
                   <span
                     key={folder.label}

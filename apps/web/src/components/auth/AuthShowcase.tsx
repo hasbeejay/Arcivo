@@ -38,22 +38,22 @@ export function AuthShowcase() {
       </p>
 
       <div className="relative mt-9 h-[340px] w-full max-w-[440px] [perspective:1200px]">
-        <div className="absolute left-1/2 top-1/2 h-[280px] w-[280px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-tr from-indigo-500/25 via-violet-500/15 to-fuchsia-500/20 blur-3xl" />
+        <div className="animate-breathe absolute left-1/2 top-1/2 h-[280px] w-[280px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-tr from-brand-sage-400/40 via-brand-cream-400/30 to-brand-coral-400/30 blur-3xl" />
         <div className="animate-spin-slow absolute left-1/2 top-1/2 h-[310px] w-[310px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-app-accent/20" />
 
         <TiltCard className="h-full" wrapperClassName="h-full" intensity={5}>
           {/* Main archive card */}
-          <div className="absolute left-0 top-4 w-[76%] overflow-hidden rounded-2xl border border-app-border/10 bg-app-panel/90 shadow-[0_30px_70px_-25px_rgba(30,27,75,0.55)] backdrop-blur-2xl [transform:translateZ(28px)]">
-            <div className="relative h-24 bg-gradient-to-tr from-indigo-500 via-violet-500 to-fuchsia-500 p-3">
+          <div className="absolute left-0 top-4 w-[76%] overflow-hidden rounded-2xl border border-app-border/10 bg-app-panel/90 shadow-[0_30px_70px_-25px_rgba(42,54,59,0.5)] backdrop-blur-2xl [transform:translateZ(28px)]">
+            <div className="relative h-24 bg-gradient-to-tr from-brand-berry-600 via-brand-berry-500 to-brand-coral-500 p-3">
               <span className="rounded bg-black/30 px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest text-white backdrop-blur">
                 Reader copy
               </span>
-              <Star className="absolute right-3 top-3 h-4 w-4 fill-amber-300 text-amber-300" />
+              <Star className="absolute right-3 top-3 h-4 w-4 fill-brand-cream-300 text-brand-cream-300" />
             </div>
             <div className="p-4">
               <p className="text-sm font-bold text-app-text">Building Better APIs</p>
               <div className="mt-1 flex items-center gap-1.5 text-[10px] text-app-subtle">
-                <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-berry-500" />
                 example.dev · 6 min read
               </div>
               <div className="mt-3 space-y-1.5">
@@ -79,13 +79,13 @@ export function AuthShowcase() {
             animate={reduced ? undefined : { y: [0, -8, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
             style={{ z: 90 }}
-            className="absolute right-0 top-0 flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-500/15 px-3 py-2 shadow-lg backdrop-blur-xl">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white">
+            className="absolute right-0 top-0 flex items-center gap-2 rounded-xl border border-brand-sage-400/30 bg-brand-sage-400/15 px-3 py-2 shadow-lg backdrop-blur-xl">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-sage-500 text-white">
               <Check className="h-3 w-3" />
             </span>
             <div>
-              <p className="text-[9px] font-semibold text-emerald-600 dark:text-emerald-300">Session synced</p>
-              <p className="text-[7px] text-emerald-600/70 dark:text-emerald-300/70">Web · Extension</p>
+              <p className="text-[9px] font-semibold text-brand-sage-700 dark:text-brand-sage-200">Session synced</p>
+              <p className="text-[7px] text-brand-sage-700/70 dark:text-brand-sage-200/70">Web · Extension</p>
             </div>
           </motion.div>
 
@@ -94,8 +94,8 @@ export function AuthShowcase() {
             animate={reduced ? undefined : { y: [0, 10, 0] }}
             transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
             style={{ z: 70 }}
-            className="absolute -right-1 bottom-0 w-[52%] rounded-xl border border-amber-400/25 bg-app-panel/95 p-3 shadow-lg backdrop-blur-xl">
-            <div className="flex items-center gap-1.5 text-[9px] font-semibold text-amber-600 dark:text-amber-300">
+            className="absolute -right-1 bottom-0 w-[52%] rounded-xl border border-brand-caramel-400/30 bg-app-panel/95 p-3 shadow-lg backdrop-blur-xl">
+            <div className="flex items-center gap-1.5 text-[9px] font-semibold text-brand-caramel-600 dark:text-brand-cream-300">
               <FileText className="h-3 w-3" />
               Demo note
             </div>
@@ -103,7 +103,7 @@ export function AuthShowcase() {
               Compare with the REST chapter, slide 14.
             </p>
             <div className="mt-2 flex items-center gap-1 text-[8px] text-app-subtle">
-              <span className="h-1 w-1 rounded-full bg-emerald-500" />
+              <span className="h-1 w-1 rounded-full bg-brand-sage-500" />
               linked to resource
             </div>
           </motion.div>

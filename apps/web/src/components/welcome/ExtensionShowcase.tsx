@@ -27,8 +27,8 @@ export function ExtensionShowcase() {
   return (
     <section id="extension" className="relative overflow-hidden py-20 sm:py-28">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute right-0 top-1/4 h-[380px] w-[380px] rounded-full bg-fuchsia-500/15 blur-[120px]" />
-        <div className="absolute bottom-0 left-1/4 h-[300px] w-[420px] rounded-full bg-indigo-500/15 blur-[120px]" />
+        <div className="animate-drift-slow absolute right-0 top-1/4 h-[380px] w-[380px] rounded-full bg-brand-cream-400/30 blur-[120px]" />
+        <div className="animate-drift absolute bottom-0 left-1/4 h-[300px] w-[420px] rounded-full bg-brand-sage-400/25 blur-[120px] [animation-delay:-9s]" />
       </div>
 
       <div className="mx-auto grid w-full max-w-6xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-12">
@@ -88,10 +88,10 @@ export function ExtensionShowcase() {
 
         <Reveal delay={0.1} y={34} className="min-w-0">
           <div className="relative mx-auto w-full max-w-[540px] [perspective:1400px]">
-            <div className="pointer-events-none absolute -inset-6 -z-10 rounded-[2.5rem] bg-gradient-to-tr from-indigo-500/20 via-transparent to-fuchsia-500/20 blur-2xl" />
+            <div className="pointer-events-none absolute -inset-6 -z-10 rounded-[2.5rem] bg-gradient-to-tr from-brand-berry-500/15 via-brand-cream-400/15 to-brand-sage-400/20 blur-2xl" />
 
             <TiltCard
-              className="rounded-2xl border border-app-border/10 bg-app-panel/80 shadow-[0_40px_100px_-40px_rgba(30,27,75,0.65)] backdrop-blur-2xl"
+              className="rounded-2xl border border-app-border/10 bg-app-panel/80 shadow-[0_40px_100px_-40px_rgba(42,54,59,0.55)] backdrop-blur-2xl"
               intensity={5}>
               {/* Browser chrome */}
               <div className="flex items-center gap-2 border-b border-app-border/10 px-3 py-2.5">
@@ -111,7 +111,7 @@ export function ExtensionShowcase() {
 
               {/* Page content */}
               <div className="relative space-y-3 rounded-b-2xl bg-app-bg/40 p-4 sm:p-5">
-                <div className="h-24 rounded-xl bg-gradient-to-tr from-indigo-500 via-violet-500 to-fuchsia-500 p-3 sm:h-28">
+                <div className="h-24 rounded-xl bg-gradient-to-tr from-brand-berry-600 via-brand-berry-500 to-brand-coral-500 p-3 sm:h-28">
                   <div className="flex items-center gap-1.5">
                     <Globe className="h-2.5 w-2.5 text-white/80" />
                     <span className="font-mono text-[8px] text-white/80">example.dev</span>
@@ -131,38 +131,38 @@ export function ExtensionShowcase() {
               </div>
 
               {/* Extension popup */}
-              <div className="absolute -bottom-4 right-3 w-[240px] rounded-xl border border-white/15 bg-slate-900 p-3 text-slate-100 shadow-[0_30px_70px_-15px_rgba(15,23,42,0.9)] sm:right-5 sm:w-[255px]">
+              <div className="absolute -bottom-4 right-3 w-[240px] rounded-xl border border-white/10 bg-brand-ink-900 p-3 text-brand-ink-100 shadow-[0_30px_70px_-15px_rgba(20,27,30,0.9)] sm:right-5 sm:w-[255px]">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <div className="flex items-center gap-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-md bg-indigo-600 text-white">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-md bg-brand-berry-600 text-white">
                       <Bookmark className="h-3 w-3" />
                     </span>
                     <div>
                       <p className="text-[9px] font-bold tracking-[0.18em]">ARCIVO</p>
-                      <p className="text-[7px] text-slate-400">haseeb@arcivo.app</p>
+                      <p className="text-[7px] text-brand-ink-400">haseeb@arcivo.app</p>
                     </div>
                   </div>
-                  <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-1.5 py-0.5 font-mono text-[7px] text-emerald-400">
+                  <span className="rounded-full border border-brand-sage-400/25 bg-brand-sage-400/10 px-1.5 py-0.5 font-mono text-[7px] text-brand-sage-300">
                     Synced
                   </span>
                 </div>
 
                 <div className="mt-2 rounded-lg border border-white/10 bg-white/5 p-2">
-                  <p className="line-clamp-1 text-[9px] font-semibold text-slate-200">Building Better APIs</p>
-                  <p className="mt-0.5 truncate font-mono text-[7px] text-slate-500">
+                  <p className="line-clamp-1 text-[9px] font-semibold text-brand-ink-100">Building Better APIs</p>
+                  <p className="mt-0.5 truncate font-mono text-[7px] text-brand-ink-400">
                     example.dev/article/building-better-apis
                   </p>
                 </div>
 
-                <div className="mt-2 flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-[8px] text-slate-300">
-                  <Folder className="h-2.5 w-2.5 text-indigo-400" /> Research
-                  <span className="ml-auto text-slate-500">▾</span>
+                <div className="mt-2 flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-[8px] text-brand-ink-200">
+                  <Folder className="h-2.5 w-2.5 text-brand-coral-400" /> Research
+                  <span className="ml-auto text-brand-ink-400">▾</span>
                 </div>
-                <div className="mt-1.5 flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-[8px] text-slate-400">
-                  <Tag className="h-2.5 w-2.5 text-indigo-400" /> api, architecture
+                <div className="mt-1.5 flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-[8px] text-brand-ink-300">
+                  <Tag className="h-2.5 w-2.5 text-brand-coral-400" /> api, architecture
                 </div>
 
-                <div className="mt-2 flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 py-2 text-[9px] font-semibold text-white shadow-lg shadow-indigo-600/30">
+                <div className="mt-2 flex items-center justify-center gap-1.5 rounded-lg bg-brand-berry-600 py-2 text-[9px] font-semibold text-white shadow-lg shadow-brand-berry-900/40">
                   <Bookmark className="h-3 w-3" /> Archive This Page
                 </div>
               </div>

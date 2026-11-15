@@ -191,9 +191,9 @@ export default function Popup() {
 
   if (status === 'loading') {
     return (
-      <div className="flex min-h-[320px] w-[360px] items-center justify-center bg-slate-900 text-slate-400">
+      <div className="flex min-h-[320px] w-[360px] items-center justify-center bg-brand-ink-900 text-brand-ink-300">
         <div className="flex flex-col items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-600/30">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-berry-600 text-white shadow-lg shadow-brand-berry-600/30">
             <Bookmark className="h-6 w-6" />
           </div>
           <span className="flex items-center gap-2 text-[11px]">
@@ -209,27 +209,27 @@ export default function Popup() {
   }
 
   return (
-    <div className="flex w-[360px] flex-col space-y-4 bg-slate-900 p-5 text-slate-100">
+    <div className="flex w-[360px] flex-col space-y-4 bg-brand-ink-900 p-5 text-brand-ink-50">
       {/* Extension Header */}
       <div className="flex items-center justify-between border-b border-white/10 pb-3">
         <div className="flex items-center gap-2">
-          <div className="rounded-lg border border-indigo-500/30 bg-indigo-600/30 p-1.5 text-indigo-400">
+          <div className="rounded-lg border border-brand-berry-500/30 bg-brand-berry-600/30 p-1.5 text-brand-coral-400">
             <Bookmark className="h-4 w-4" />
           </div>
           <div>
             <h1 className="text-sm font-bold tracking-tight text-white">ARCIVO</h1>
-            <p className="max-w-[190px] truncate text-[10px] text-slate-400">{session.user.email}</p>
+            <p className="max-w-[190px] truncate text-[10px] text-brand-ink-300">{session.user.email}</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-0.5 font-mono text-[10px] text-emerald-400">
+          <span className="rounded-full border border-brand-sage-400/25 bg-brand-sage-400/10 px-2 py-0.5 font-mono text-[10px] text-brand-sage-300">
             Synced
           </span>
           <button
             onClick={() => void handleSignOut()}
             title="Sign out"
             aria-label="Sign out"
-            className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-white/10 hover:text-slate-100">
+            className="rounded-full p-1.5 text-brand-ink-300 transition-colors hover:bg-white/10 hover:text-brand-ink-50">
             <LogOut className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -245,38 +245,38 @@ export default function Popup() {
             className="h-6 w-6 rounded-full object-cover"
           />
         ) : (
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-berry-600 text-[10px] font-semibold text-white">
             {initials(session.user.fullName)}
           </span>
         )}
-        <span className="text-[11px] font-medium text-slate-200">{session.user.fullName}</span>
+        <span className="text-[11px] font-medium text-brand-ink-100">{session.user.fullName}</span>
       </div>
 
       {/* Captured Webpage Card */}
       <div className="space-y-2 rounded-xl border border-white/10 bg-white/5 p-3.5">
         <div className="flex items-start justify-between gap-2">
-          <h2 className="line-clamp-2 text-xs font-semibold text-slate-200">{tabInfo.title}</h2>
+          <h2 className="line-clamp-2 text-xs font-semibold text-brand-ink-100">{tabInfo.title}</h2>
         </div>
-        <div className="flex items-center gap-1.5 truncate font-mono text-[11px] text-slate-400">
-          <ExternalLink className="h-3 w-3 flex-shrink-0 text-indigo-400" />
+        <div className="flex items-center gap-1.5 truncate font-mono text-[11px] text-brand-ink-300">
+          <ExternalLink className="h-3 w-3 flex-shrink-0 text-brand-coral-400" />
           <span className="truncate">{tabInfo.url}</span>
         </div>
-        <div className="flex items-center gap-1 pt-1 text-[10px] text-indigo-300">
-          <Sparkles className="h-3 w-3 text-indigo-400" />
+        <div className="flex items-center gap-1 pt-1 text-[10px] text-brand-coral-300">
+          <Sparkles className="h-3 w-3 text-brand-coral-400" />
           <span>Extracts clean reader mode & metadata</span>
         </div>
       </div>
 
       {/* Destination Folder Selector */}
       <div className="space-y-1.5">
-        <label className="flex items-center gap-1.5 text-[11px] font-medium text-slate-300">
-          <Folder className="h-3.5 w-3.5 text-indigo-400" />
+        <label className="flex items-center gap-1.5 text-[11px] font-medium text-brand-ink-200">
+          <Folder className="h-3.5 w-3.5 text-brand-coral-400" />
           Save to Folder
         </label>
         <select
           value={selectedFolder}
           onChange={(event) => setSelectedFolder(event.target.value)}
-          className="w-full rounded-xl border border-white/10 bg-slate-800 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+          className="w-full rounded-xl border border-white/10 bg-brand-ink-800 px-3 py-2 text-xs text-brand-ink-100 focus:outline-none focus:ring-1 focus:ring-brand-berry-500">
           {folders.length === 0 && <option value="">No folders yet</option>}
           {folders.map((folder) => (
             <option key={folder.id} value={folder.id}>
@@ -288,8 +288,8 @@ export default function Popup() {
 
       {/* Tags Input */}
       <div className="space-y-1.5">
-        <label className="flex items-center gap-1.5 text-[11px] font-medium text-slate-300">
-          <Tag className="h-3.5 w-3.5 text-indigo-400" />
+        <label className="flex items-center gap-1.5 text-[11px] font-medium text-brand-ink-200">
+          <Tag className="h-3.5 w-3.5 text-brand-coral-400" />
           Tags (comma separated)
         </label>
         <input
@@ -297,13 +297,13 @@ export default function Popup() {
           value={tags}
           onChange={(event) => setTags(event.target.value)}
           placeholder="api, backend, architecture"
-          className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-brand-ink-100 placeholder-brand-ink-500 focus:outline-none focus:ring-1 focus:ring-brand-berry-500"
         />
       </div>
 
       {/* Save Action Button */}
       {archiveError && (
-        <p className="rounded-lg border border-rose-500/25 bg-rose-500/10 px-2.5 py-1.5 text-[10px] leading-relaxed text-rose-300">
+        <p className="rounded-lg border border-brand-berry-500/25 bg-brand-berry-500/10 px-2.5 py-1.5 text-[10px] leading-relaxed text-brand-coral-300">
           {archiveError}
         </p>
       )}
@@ -311,7 +311,7 @@ export default function Popup() {
         onClick={() => void handleArchive()}
         disabled={loading || saved}
         className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold shadow-lg transition-all ${
-          saved ? 'bg-emerald-600 text-white' : 'bg-indigo-600 text-white shadow-indigo-600/30 hover:bg-indigo-500'
+          saved ? 'bg-brand-sage-600 text-white' : 'bg-brand-berry-600 text-white shadow-brand-berry-600/30 hover:bg-brand-berry-500'
         }`}>
         {saved ? (
           <>
@@ -331,7 +331,7 @@ export default function Popup() {
           href="http://localhost:5173/app"
           target="_blank"
           rel="noreferrer"
-          className="text-[11px] text-slate-400 transition-colors hover:text-indigo-300">
+          className="text-[11px] text-brand-ink-300 transition-colors hover:text-brand-coral-300">
           Open Arcivo Workspace ↗
         </a>
       </div>

@@ -34,7 +34,7 @@ export function WelcomeNav() {
       }`}>
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-5 sm:px-8">
         <Link to="/" className="group flex items-center gap-2.5" aria-label="Arcivo home">
-          <span className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-tr from-indigo-600 to-fuchsia-500 text-white shadow-lg shadow-indigo-600/30 transition-transform duration-300 group-hover:scale-105">
+          <span className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-tr from-brand-berry-600 via-brand-berry-500 to-brand-coral-400 text-white shadow-lg shadow-brand-berry-600/25 transition-transform duration-300 group-hover:scale-105">
             <Bookmark className="h-4 w-4" />
           </span>
           <span className="text-sm font-extrabold tracking-[0.22em] text-app-text">ARCIVO</span>
@@ -48,7 +48,7 @@ export function WelcomeNav() {
                 href={link.href}
                 className="group relative text-[13px] font-medium text-app-muted transition-colors hover:text-app-text">
                 {link.label}
-                <span className="absolute -bottom-1.5 left-0 h-px w-full origin-left scale-x-0 bg-gradient-to-r from-indigo-500 to-fuchsia-500 transition-transform duration-300 group-hover:scale-x-100" />
+                <span className="absolute -bottom-1.5 left-0 h-px w-full origin-left scale-x-0 bg-gradient-to-r from-brand-berry-500 to-brand-coral-400 transition-transform duration-300 group-hover:scale-x-100" />
               </a>
             ))}
           </nav>
@@ -66,7 +66,7 @@ export function WelcomeNav() {
           {status === 'authenticated' ? (
             <Link
               to="/app"
-              className="group flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-indigo-600/25 transition-all hover:shadow-indigo-600/40">
+              className="group flex items-center gap-1.5 rounded-full bg-gradient-to-r from-brand-berry-600 to-brand-coral-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-brand-berry-600/25 transition-all hover:-translate-y-0.5 hover:shadow-brand-berry-600/40">
               Open workspace
               <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </Link>
@@ -86,7 +86,7 @@ export function WelcomeNav() {
                 </span>
                 <motion.span
                   aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                  className="absolute inset-0 bg-gradient-to-r from-brand-berry-500 via-brand-berry-400 to-brand-coral-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                 />
               </Link>
             </>

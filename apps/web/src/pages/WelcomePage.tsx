@@ -46,7 +46,7 @@ export default function WelcomePage() {
       <motion.div
         aria-hidden="true"
         style={{ scaleX: reduced ? scrollYProgress : scaleX }}
-        className="fixed inset-x-0 top-0 z-[60] h-[2px] origin-left bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500"
+        className="fixed inset-x-0 top-0 z-[60] h-[2px] origin-left bg-gradient-to-r from-brand-berry-600 via-brand-coral-400 to-brand-cream-400"
       />
 
       <WelcomeNav />

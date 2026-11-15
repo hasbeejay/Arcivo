@@ -153,10 +153,10 @@ export function SaveModal({ open, folders, defaultFolderId, onClose, onSave }: S
             transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
             className="relative flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border border-app-border/10 bg-app-panel/95 shadow-2xl backdrop-blur-2xl sm:rounded-3xl">
             <div className="relative shrink-0 border-b border-app-border/10 px-5 py-4 sm:px-6">
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-transparent to-fuchsia-500/10" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-brand-berry-500/10 via-brand-cream-400/10 to-brand-sage-400/15" />
               <div className="relative flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-fuchsia-500 text-white shadow-lg shadow-indigo-600/30">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-berry-600 to-brand-coral-500 text-white shadow-lg shadow-brand-berry-600/25">
                     <Link2 className="h-4 w-4" />
                   </span>
                   <div>
@@ -314,7 +314,7 @@ export function SaveModal({ open, folders, defaultFolderId, onClose, onSave }: S
                   <button
                     type="submit"
                     disabled={phase !== 'idle'}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-4 py-2 text-[12px] font-semibold text-white shadow-lg shadow-indigo-600/25 transition-all hover:shadow-indigo-600/40 disabled:cursor-not-allowed disabled:opacity-90 sm:flex-none">
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-brand-berry-600 via-brand-berry-500 to-brand-coral-500 px-4 py-2 text-[12px] font-semibold text-white shadow-lg shadow-brand-berry-600/25 transition-all hover:shadow-brand-berry-600/40 disabled:cursor-not-allowed disabled:opacity-90 sm:flex-none">
                     {phase === 'saving' && (
                       <>
                         <Loader2 className="h-3.5 w-3.5 animate-spin" /> Archiving…

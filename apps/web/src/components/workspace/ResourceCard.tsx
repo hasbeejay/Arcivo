@@ -16,6 +16,7 @@ interface ResourceCardProps {
   onToggleFavorite: (id: string) => void;
   onOpen: (id: string) => void;
   variant?: 'grid' | 'list';
+  index?: number;
 }
 
 function cardKeyActivate(event: KeyboardEvent<HTMLElement>, action: () => void) {
@@ -30,11 +31,32 @@ function FavoriteButton({
   resource,
   onToggleFavorite,
   className = '',
+  tone = 'overlay',
 }: {
   resource: WorkspaceResource;
   onToggleFavorite: (id: string) => void;
   className?: string;
+  /** "overlay" sits on gradient art; "plain" sits on a card surface. */
+  tone?: 'overlay' | 'plain';
 }) {
+  const surface =
+    tone === 'plain'
+      ? resource.isFavorite
+        ? 'text-brand-caramel-600 hover:bg-brand-caramel-400/15 dark:text-brand-cream-300'
+        : 'text-app-subtle hover:bg-app-hover/10 hover:text-brand-caramel-500'
+      : resource.isFavorite
+        ? 'bg-brand-cream-300/25 text-brand-cream-100'
+        : 'bg-black/20 text-white/70 hover:bg-black/30 hover:text-brand-cream-200';
+
+  const star =
+    tone === 'plain'
+      ? resource.isFavorite
+        ? 'fill-brand-caramel-500 text-brand-caramel-500 dark:fill-brand-cream-300 dark:text-brand-cream-300'
+        : ''
+      : resource.isFavorite
+        ? 'fill-brand-cream-200'
+        : '';
+
   return (
     <button
       type="button"
@@ -44,18 +66,14 @@ function FavoriteButton({
       }}
       aria-label={resource.isFavorite ? `Remove ${resource.title} from favorites` : `Add ${resource.title} to favorites`}
       aria-pressed={resource.isFavorite}
-      className={`rounded-lg p-1.5 backdrop-blur-md transition-colors ${
-        resource.isFavorite
-          ? 'bg-amber-400/15 text-amber-400'
-          : 'bg-black/20 text-white/70 hover:bg-black/30 hover:text-amber-300'
-      } ${className}`}>
-      <Star className={`h-3.5 w-3.5 ${resource.isFavorite ? 'fill-amber-400' : ''}`} />
+      className={`rounded-lg p-1.5 transition-colors ${tone === 'overlay' ? 'backdrop-blur-md' : ''} ${surface} ${className}`}>
+      <Star className={`h-3.5 w-3.5 ${star}`} />
     </button>
   );
 }
 
 export const ResourceCard = forwardRef<HTMLElement, ResourceCardProps>(function ResourceCard(
-  { resource, folder, onToggleFavorite, onOpen, variant = 'grid' },
+  { resource, folder, onToggleFavorite, onOpen, variant = 'grid', index = 0 },
   ref,
 ) {
   const meta = kindMeta[resource.kind];
@@ -71,7 +89,7 @@ export const ResourceCard = forwardRef<HTMLElement, ResourceCardProps>(function 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.98 }}
-        transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.22, delay: Math.min(index * 0.025, 0.2), ease: [0.16, 1, 0.3, 1] }}
         role="button"
         tabIndex={0}
         onClick={open}
@@ -88,12 +106,12 @@ export const ResourceCard = forwardRef<HTMLElement, ResourceCardProps>(function 
             <h4 className="truncate text-[13px] font-semibold text-app-text transition-colors group-hover:text-app-accent sm:text-sm">
               {resource.title}
             </h4>
-            {resource.note && <StickyNote className="h-3 w-3 shrink-0 text-amber-500" />}
+            {resource.note && <StickyNote className="h-3 w-3 shrink-0 text-brand-caramel-500" />}
           </div>
           <p className="mt-0.5 line-clamp-1 text-[11px] text-app-muted">{resource.description}</p>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-app-subtle">
             <span className="flex items-center gap-1 font-mono">
-              <span className="h-1 w-1 rounded-full bg-emerald-500" />
+              <span className="h-1 w-1 rounded-full bg-brand-sage-500" />
               {host}
             </span>
             {folder && (
@@ -117,7 +135,7 @@ export const ResourceCard = forwardRef<HTMLElement, ResourceCardProps>(function 
               </span>
             ))}
           </div>
-          <FavoriteButton resource={resource} onToggleFavorite={onToggleFavorite} className="bg-transparent" />
+          <FavoriteButton resource={resource} onToggleFavorite={onToggleFavorite} tone="plain" />
           <a
             href={resource.url}
             target="_blank"
@@ -139,15 +157,15 @@ export const ResourceCard = forwardRef<HTMLElement, ResourceCardProps>(function 
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.97 }}
-      transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.28, delay: Math.min(index * 0.035, 0.28), ease: [0.16, 1, 0.3, 1] }}
       role="button"
       tabIndex={0}
       onClick={open}
       onKeyDown={(event) => cardKeyActivate(event, open)}
-      className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-app-border/10 bg-app-card/45 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-app-accent/30 hover:bg-app-card/70 hover:shadow-xl hover:shadow-indigo-950/5">
+      className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-app-border/10 bg-app-card/45 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-app-accent/30 hover:bg-app-card/70 hover:shadow-xl hover:shadow-brand-berry-600/10">
       <div className={`relative h-28 overflow-hidden bg-gradient-to-tr p-3.5 ${meta.gradient}`}>
         <span className="bg-dots absolute inset-0 opacity-20" />
-        <Icon className="absolute -bottom-3 -right-2 h-20 w-20 rotate-[-10deg] text-white/15" />
+        <Icon className="absolute -bottom-3 -right-2 h-20 w-20 rotate-[-10deg] text-white/15 transition-transform duration-700 ease-out-expo group-hover:rotate-0 group-hover:scale-110" />
 
         <div className="relative flex items-start justify-between">
           <span className="rounded-md border border-white/20 bg-black/25 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-white backdrop-blur-md">
@@ -178,7 +196,7 @@ export const ResourceCard = forwardRef<HTMLElement, ResourceCardProps>(function 
             {resource.title}
           </h4>
           {resource.note && (
-            <StickyNote className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" aria-label="Has a note" />
+            <StickyNote className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-caramel-500" aria-label="Has a note" />
           )}
         </div>
         <p className="mt-1 line-clamp-2 text-[11.5px] leading-relaxed text-app-muted">{resource.description}</p>

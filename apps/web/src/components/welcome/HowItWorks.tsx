@@ -22,21 +22,21 @@ const steps = [
     title: 'Save anything in one click',
     body: 'Paste a link or tap the extension. Arcivo pulls the title, cover, author, favicon and reading time — no manual filing required.',
     icon: Bookmark,
-    accent: 'from-indigo-500 to-violet-500',
+    accent: 'from-brand-berry-600 to-brand-berry-400',
   },
   {
     tag: 'Preserve',
     title: 'Keep a copy that outlives the link',
     body: 'Reader mode extracts the clean article text and stores it beside the URL. When a page changes or disappears, your version still opens.',
     icon: ShieldCheck,
-    accent: 'from-emerald-500 to-teal-500',
+    accent: 'from-brand-sage-600 to-brand-sage-400',
   },
   {
     tag: 'Recall',
     title: 'Find it again in seconds',
     body: 'Folders, tags, notes and full-text search work together. Search the way you think — Arcivo searches the saved copy, not just the title.',
     icon: Search,
-    accent: 'from-fuchsia-500 to-pink-500',
+    accent: 'from-brand-coral-500 to-brand-caramel-400',
   },
 ];
 
@@ -48,13 +48,13 @@ function CapturePanel() {
         <span className="min-w-0 truncate font-mono text-[11px] text-app-muted">
           example.dev/article/building-better-apis
         </span>
-        <span className="ml-auto flex shrink-0 items-center gap-1 rounded-lg bg-indigo-600 px-2 py-1 text-[10px] font-semibold text-white">
+        <span className="ml-auto flex shrink-0 items-center gap-1 rounded-lg bg-brand-berry-600 px-2 py-1 text-[10px] font-semibold text-white">
           <Sparkles className="h-2.5 w-2.5" /> Fetch
         </span>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-app-border/10 bg-app-card/60">
-        <div className="relative h-24 bg-gradient-to-tr from-indigo-500 via-violet-500 to-fuchsia-500 p-3">
+        <div className="relative h-24 bg-gradient-to-tr from-brand-berry-600 via-brand-berry-500 to-brand-coral-500 p-3">
           <span className="rounded bg-black/30 px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest text-white backdrop-blur">
             Article
           </span>
@@ -200,8 +200,8 @@ export function HowItWorks() {
     <section id="how" ref={sectionRef} className="relative h-[300vh]">
       <div className="sticky top-16 flex h-[calc(100svh-4rem)] items-center overflow-hidden">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute left-1/4 top-1/4 h-[360px] w-[360px] rounded-full bg-indigo-500/10 blur-[120px]" />
-          <div className="absolute bottom-1/4 right-1/4 h-[320px] w-[320px] rounded-full bg-fuchsia-500/10 blur-[120px]" />
+          <div className="animate-aurora absolute left-1/4 top-1/4 h-[360px] w-[360px] rounded-full bg-brand-sage-400/20 blur-[120px]" />
+          <div className="animate-drift-slow absolute bottom-1/4 right-1/4 h-[320px] w-[320px] rounded-full bg-brand-cream-400/25 blur-[120px]" />
         </div>
 
         <div className="mx-auto grid w-full max-w-6xl items-center gap-8 px-5 sm:px-8 lg:grid-cols-[0.92fr_1.08fr] lg:gap-16">
@@ -230,7 +230,7 @@ export function HowItWorks() {
                     }`}>
                     <span
                       className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr text-white transition-all ${entry.accent} ${
-                        isActive ? 'shadow-lg shadow-indigo-600/25' : 'opacity-40 grayscale'
+                        isActive ? 'shadow-lg shadow-brand-berry-600/25' : 'opacity-40 grayscale'
                       }`}>
                       <entry.icon className="h-4 w-4" />
                     </span>
@@ -284,7 +284,7 @@ export function HowItWorks() {
           </div>
 
           <div className="relative min-w-0 [perspective:1200px]">
-            <div className="pointer-events-none absolute -inset-4 -z-10 rounded-[2rem] bg-gradient-to-tr from-indigo-500/15 via-transparent to-fuchsia-500/15 blur-2xl" />
+            <div className="pointer-events-none absolute -inset-4 -z-10 rounded-[2rem] bg-gradient-to-tr from-brand-berry-500/15 via-brand-cream-400/10 to-brand-sage-400/20 blur-2xl" />
             <TiltCard className="rounded-2xl border border-app-border/10 bg-app-panel/70 p-3 shadow-2xl backdrop-blur-2xl sm:p-4" intensity={4}>
               <div className="mb-3 flex items-center gap-2 border-b border-app-border/10 pb-2.5">
                 <span className="h-2 w-2 rounded-full bg-rose-400/80" />
