@@ -4,7 +4,8 @@ export interface User {
   id: string;
   email: string;
   fullName: string;
-  avatarUrl?: string;
+  avatarUrl?: string | null;
+  emailVerified?: boolean;
   createdAt: string;
 }
 

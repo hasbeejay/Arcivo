@@ -1,7 +1,35 @@
-import { useState, useEffect } from 'react';
-import { Bookmark, Folder, Tag, Check, Sparkles, ExternalLink } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
+  Bookmark,
+  Folder,
+  Tag,
+  Check,
+  Sparkles,
+  ExternalLink,
+  Loader2,
+  LogOut,
+} from 'lucide-react';
+import { ApiError, fetchCurrentUser, signIn, signOut } from '../lib/api';
+import { loadSession, saveSession, type StoredSession } from '../lib/storage';
+import { LoginView } from './LoginView';
+
+type Status = 'loading' | 'signed-out' | 'signed-in';
+
+function initials(name: string): string {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
+}
 
 export default function Popup() {
+  const [status, setStatus] = useState<Status>('loading');
+  const [session, setSession] = useState<StoredSession | null>(null);
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+
   const [tabInfo, setTabInfo] = useState<{ title: string; url: string; favIconUrl?: string }>({
     title: 'Loading current tab...',
     url: '',
@@ -12,8 +40,45 @@ export default function Popup() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // If in Chrome extension environment, query active tab
-    if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.query) {
+    let cancelled = false;
+
+    const bootstrap = async () => {
+      const stored = await loadSession();
+      if (cancelled) return;
+
+      if (!stored) {
+        setStatus('signed-out');
+        return;
+      }
+
+      try {
+        const user = await fetchCurrentUser(stored.token);
+        if (cancelled) return;
+        const refreshed = { ...stored, user };
+        await saveSession(refreshed);
+        setSession(refreshed);
+        setStatus('signed-in');
+      } catch (error) {
+        if (cancelled) return;
+        if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+          await signOut();
+          setStatus('signed-out');
+          return;
+        }
+        // API unreachable: keep the stored session so the popup still works offline.
+        setSession(stored);
+        setStatus('signed-in');
+      }
+    };
+
+    void bootstrap();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof chrome !== 'undefined' && chrome.tabs?.query) {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (tabs[0]) {
           setTabInfo({
@@ -24,7 +89,7 @@ export default function Popup() {
         }
       });
     } else {
-      // Browser fallback for local preview testing
+      // Browser fallback for local preview testing.
       setTabInfo({
         title: 'Building Better APIs — Practical REST Design',
         url: 'https://example.dev/article/building-better-apis',
@@ -32,9 +97,30 @@ export default function Popup() {
     }
   }, []);
 
-  const handleArchive = async () => {
+  const handleLogin = async (email: string, password: string) => {
+    setAuthBusy(true);
+    setAuthError(null);
+    try {
+      const nextSession = await signIn(email, password);
+      setSession(nextSession);
+      setStatus('signed-in');
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : 'Sign-in failed. Please try again.');
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    setSession(null);
+    setAuthError(null);
+    setStatus('signed-out');
+  };
+
+  const handleArchive = () => {
     setLoading(true);
-    // Simulating API dispatch to NestJS backend POST /api/v1/resources
+    // TODO: POST /api/v1/resources once the resources endpoint exists.
     setTimeout(() => {
       setLoading(false);
       setSaved(true);
@@ -42,49 +128,94 @@ export default function Popup() {
     }, 700);
   };
 
+  if (status === 'loading') {
+    return (
+      <div className="flex min-h-[320px] w-[360px] items-center justify-center bg-slate-900 text-slate-400">
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-600/30">
+            <Bookmark className="h-6 w-6" />
+          </div>
+          <span className="flex items-center gap-2 text-[11px]">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking your session…
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'signed-out' || !session) {
+    return <LoginView busy={authBusy} error={authError} onSubmit={(email, password) => void handleLogin(email, password)} />;
+  }
+
   return (
-    <div className="w-[360px] p-5 bg-slate-900 text-slate-100 flex flex-col space-y-4">
+    <div className="flex w-[360px] flex-col space-y-4 bg-slate-900 p-5 text-slate-100">
       {/* Extension Header */}
       <div className="flex items-center justify-between border-b border-white/10 pb-3">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-indigo-600/30 text-indigo-400 border border-indigo-500/30">
-            <Bookmark className="w-4 h-4" />
+          <div className="rounded-lg border border-indigo-500/30 bg-indigo-600/30 p-1.5 text-indigo-400">
+            <Bookmark className="h-4 w-4" />
           </div>
           <div>
             <h1 className="text-sm font-bold tracking-tight text-white">ARCIVO</h1>
-            <p className="text-[10px] text-slate-400">Quick Web Clipper</p>
+            <p className="max-w-[190px] truncate text-[10px] text-slate-400">{session.user.email}</p>
           </div>
         </div>
-        <span className="text-[10px] font-mono text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">
-          Connected
-        </span>
+        <div className="flex items-center gap-1">
+          <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-0.5 font-mono text-[10px] text-emerald-400">
+            Synced
+          </span>
+          <button
+            onClick={() => void handleSignOut()}
+            title="Sign out"
+            aria-label="Sign out"
+            className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-white/10 hover:text-slate-100">
+            <LogOut className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Account row */}
+      <div className="flex items-center gap-2">
+        {session.user.avatarUrl ? (
+          <img
+            src={session.user.avatarUrl}
+            alt={session.user.fullName}
+            referrerPolicy="no-referrer"
+            className="h-6 w-6 rounded-full object-cover"
+          />
+        ) : (
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white">
+            {initials(session.user.fullName)}
+          </span>
+        )}
+        <span className="text-[11px] font-medium text-slate-200">{session.user.fullName}</span>
       </div>
 
       {/* Captured Webpage Card */}
-      <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 space-y-2">
+      <div className="space-y-2 rounded-xl border border-white/10 bg-white/5 p-3.5">
         <div className="flex items-start justify-between gap-2">
-          <h2 className="text-xs font-semibold text-slate-200 line-clamp-2">{tabInfo.title}</h2>
+          <h2 className="line-clamp-2 text-xs font-semibold text-slate-200">{tabInfo.title}</h2>
         </div>
-        <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-mono truncate">
-          <ExternalLink className="w-3 h-3 flex-shrink-0 text-indigo-400" />
+        <div className="flex items-center gap-1.5 truncate font-mono text-[11px] text-slate-400">
+          <ExternalLink className="h-3 w-3 flex-shrink-0 text-indigo-400" />
           <span className="truncate">{tabInfo.url}</span>
         </div>
-        <div className="pt-1 flex items-center gap-1 text-[10px] text-indigo-300">
-          <Sparkles className="w-3 h-3 text-indigo-400" />
+        <div className="flex items-center gap-1 pt-1 text-[10px] text-indigo-300">
+          <Sparkles className="h-3 w-3 text-indigo-400" />
           <span>Extracts clean reader mode & metadata</span>
         </div>
       </div>
 
       {/* Destination Folder Selector */}
       <div className="space-y-1.5">
-        <label className="text-[11px] font-medium text-slate-300 flex items-center gap-1.5">
-          <Folder className="w-3.5 h-3.5 text-indigo-400" />
+        <label className="flex items-center gap-1.5 text-[11px] font-medium text-slate-300">
+          <Folder className="h-3.5 w-3.5 text-indigo-400" />
           Save to Folder
         </label>
-        <select 
+        <select
           value={selectedFolder}
-          onChange={(e) => setSelectedFolder(e.target.value)}
-          className="w-full bg-slate-800 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+          onChange={(event) => setSelectedFolder(event.target.value)}
+          className="w-full rounded-xl border border-white/10 bg-slate-800 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500">
           <option value="1">📁 Web Development</option>
           <option value="2">📁 University</option>
           <option value="3">📁 Research</option>
@@ -94,51 +225,48 @@ export default function Popup() {
 
       {/* Tags Input */}
       <div className="space-y-1.5">
-        <label className="text-[11px] font-medium text-slate-300 flex items-center gap-1.5">
-          <Tag className="w-3.5 h-3.5 text-indigo-400" />
+        <label className="flex items-center gap-1.5 text-[11px] font-medium text-slate-300">
+          <Tag className="h-3.5 w-3.5 text-indigo-400" />
           Tags (comma separated)
         </label>
-        <input 
-          type="text" 
+        <input
+          type="text"
           value={tags}
-          onChange={(e) => setTags(e.target.value)}
+          onChange={(event) => setTags(event.target.value)}
           placeholder="api, backend, architecture"
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
       </div>
 
       {/* Save Action Button */}
-      <button 
+      <button
         onClick={handleArchive}
         disabled={loading || saved}
-        className={`w-full py-2.5 px-4 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-lg ${
-          saved 
-            ? 'bg-emerald-600 text-white' 
-            : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30'
+        className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold shadow-lg transition-all ${
+          saved ? 'bg-emerald-600 text-white' : 'bg-indigo-600 text-white shadow-indigo-600/30 hover:bg-indigo-500'
         }`}>
         {saved ? (
           <>
-            <Check className="w-4 h-4" /> Saved to Arcivo!
+            <Check className="h-4 w-4" /> Saved to Arcivo!
           </>
         ) : loading ? (
           <span>Archiving page...</span>
         ) : (
           <>
-            <Bookmark className="w-4 h-4" /> Archive This Page
+            <Bookmark className="h-4 w-4" /> Archive This Page
           </>
         )}
       </button>
 
-      <div className="pt-2 border-t border-white/10 text-center">
-        <a 
-          href="http://localhost:5173" 
-          target="_blank" 
+      <div className="border-t border-white/10 pt-2 text-center">
+        <a
+          href="http://localhost:5173"
+          target="_blank"
           rel="noreferrer"
-          className="text-[11px] text-slate-400 hover:text-indigo-300 transition-colors">
+          className="text-[11px] text-slate-400 transition-colors hover:text-indigo-300">
           Open Arcivo Workspace ↗
         </a>
       </div>
     </div>
   );
 }
-

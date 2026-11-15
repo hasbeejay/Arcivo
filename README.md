@@ -115,10 +115,16 @@ Arcivo exceeds academic requirements by supporting 24 distinct CRUD operations a
 ### Internal REST Endpoints
 
 #### Authentication (`/api/v1/auth`)
-* `POST /register` — User registration with bcrypt-hashed passwords.
-* `POST /login` — JWT authentication returning Access & Refresh tokens.
+All protected routes expect `Authorization: Bearer <token>`.
+
+* `POST /register` — User registration with bcrypt-hashed passwords (returns user + tokens).
+* `POST /login` — Email/password login returning Access & Refresh tokens.
+* `POST /google` — Google sign-in via a Google Identity Services ID token (`credential`).
+* `POST /refresh` — Exchange a refresh token for a fresh access token pair.
 * `GET  /me` — Authenticated profile.
-* `POST /extension-token` — Generate a persistent API token for the Chrome extension.
+* `POST /extension-token` — Generate a long-lived (90d) token for the Chrome extension; accepted by the same JWT guard as access tokens.
+
+Token types are encoded in the JWT `type` claim (`access`, `refresh`, `extension`). Refresh tokens are only accepted by `/auth/refresh`; extension tokens authenticate like access tokens but skip the browser refresh cycle.
 
 #### Resources (`/api/v1/resources`)
 * `POST /preview` — Live extraction of URL metadata prior to saving.
@@ -170,7 +176,9 @@ erDiagram
     USERS {
         uuid id PK
         string email UK
-        string password_hash
+        string password_hash "nullable for Google-only accounts"
+        string google_id UK
+        boolean email_verified
         string full_name
         string avatar_url
         datetime created_at
@@ -253,20 +261,45 @@ npm install
 
 ### 3. Start Local PostgreSQL with Docker
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### 4. Configure Environment Variables
-Copy `.env.example` in `apps/api` and set:
+```bash
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env
+cp apps/extension/.env.example apps/extension/.env
+```
+The defaults already match `docker-compose.yml`. Set the optional API keys if you need those integrations:
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/arcivo?schema=public"
+DATABASE_URL="postgresql://arcivo_user:arcivo_password@localhost:5432/arcivo_db?schema=public"
 JWT_SECRET="arcivo-secret-key-change-in-production"
+JWT_REFRESH_SECRET="arcivo-refresh-secret-change-in-production"
 YOUTUBE_API_KEY="your-google-cloud-api-key"
 GEMINI_API_KEY="your-gemini-api-key"
+GOOGLE_CLIENT_ID=""
 PORT=4000
 ```
 
-### 5. Run the Applications
+#### Google Sign-In setup (optional)
+Email/password auth works with no extra configuration. To enable **Continue with Google**:
+
+1. Open the [Google Cloud Console credentials page](https://console.cloud.google.com/apis/credentials) and create an **OAuth client ID** of type **Web application**.
+2. Add an **Authorized JavaScript origin**: `http://localhost:5173` (add your deployed web URL later).
+3. Copy the client ID into both files:
+   * `apps/api/.env` → `GOOGLE_CLIENT_ID="..."`
+   * `apps/web/.env` → `VITE_GOOGLE_CLIENT_ID="..."`
+4. Restart the API and Vite dev server.
+
+Both values must be the same client ID. If `GOOGLE_CLIENT_ID` is unset, `POST /auth/google` returns `503` and the web UI disables the Google button with a setup hint. Google accounts are linked to existing email/password accounts by email, and the extension signs in with the same email/password account.
+
+### 5. Apply Database Migrations
+```bash
+npm run prisma:migrate --workspace=apps/api
+```
+This creates the tables in the running PostgreSQL container and generates the Prisma client.
+
+### 6. Run the Applications
 ```bash
 # Start backend API (NestJS)
 npm run start:dev --workspace=apps/api
@@ -275,10 +308,13 @@ npm run start:dev --workspace=apps/api
 npm run dev --workspace=apps/web
 ```
 
-### 6. Load the Browser Extension
-1. Open Google Chrome and navigate to `chrome://extensions/`.
-2. Toggle on **Developer mode** in the top right.
-3. Click **Load unpacked** and select the `apps/extension/dist` (or `apps/extension`) folder.
+### 7. Load the Browser Extension
+1. Build the extension: `npm run build --workspace=apps/extension`.
+2. Open Google Chrome and navigate to `chrome://extensions/`.
+3. Toggle on **Developer mode** in the top right.
+4. Click **Load unpacked** and select the `apps/extension/dist` folder.
+
+The popup signs in with your Arcivo email/password, stores a 90-day extension token in `chrome.storage.local`, and validates it against `GET /auth/me` on open. Sign out from the popup header to clear the session. The API must be reachable at `http://localhost:4000` (already allowed in the manifest's `host_permissions`).
 
 ---
 
