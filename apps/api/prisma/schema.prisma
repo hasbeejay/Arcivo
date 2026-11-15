@@ -13,7 +13,9 @@ enum ResourceType {
   ARTICLE
   VIDEO
   BOOK
+  PAPER
   CODE
+  THREAD
   GENERAL
 }
 
@@ -41,6 +43,7 @@ model Folder {
   userId      String     @map("user_id")
   parentId    String?    @map("parent_id")
   name        String
+  description String?
   color       String     @default("#6366F1")
   icon        String     @default("folder")
   sortOrder   Int        @default(0) @map("sort_order")
@@ -68,6 +71,7 @@ model Resource {
   aiSummary       String?       @map("ai_summary") @db.Text
   isFavorite      Boolean       @default(false) @map("is_favorite")
   isArchived      Boolean       @default(false) @map("is_archived")
+  readingMinutes  Int?          @map("reading_minutes")
   createdAt       DateTime      @default(now()) @map("created_at")
   updatedAt       DateTime      @updatedAt @map("updated_at")
 
