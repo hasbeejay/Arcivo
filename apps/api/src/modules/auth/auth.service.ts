@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Prisma, User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { OAuth2Client } from 'google-auth-library';
+import { DEFAULT_FOLDERS } from '../../common/default-folders.js';
 import { PrismaService } from '../../database/prisma.service.js';
 import type { GoogleLoginDto } from './dto/google-login.dto.js';
 import type { LoginDto } from './dto/login.dto.js';
@@ -64,6 +65,7 @@ export class AuthService {
           email,
           passwordHash: await bcrypt.hash(dto.password, BCRYPT_ROUNDS),
           fullName: dto.fullName.trim(),
+          folders: { create: DEFAULT_FOLDERS.map((folder) => ({ ...folder })) },
         },
       });
 
@@ -148,6 +150,7 @@ export class AuthService {
           emailVerified: true,
           fullName: payload.name?.trim() || email.split('@')[0],
           avatarUrl: payload.picture ?? null,
+          folders: { create: DEFAULT_FOLDERS.map((folder) => ({ ...folder })) },
         },
       });
     }
