@@ -9,7 +9,15 @@ import {
   Loader2,
   LogOut,
 } from 'lucide-react';
-import { ApiError, fetchCurrentUser, signIn, signOut } from '../lib/api';
+import {
+  ApiError,
+  fetchCurrentUser,
+  fetchFolders,
+  saveResource,
+  signIn,
+  signOut,
+  type ExtensionFolder,
+} from '../lib/api';
 import { loadSession, saveSession, type StoredSession } from '../lib/storage';
 import { LoginView } from './LoginView';
 
@@ -34,10 +42,12 @@ export default function Popup() {
     title: 'Loading current tab...',
     url: '',
   });
-  const [selectedFolder, setSelectedFolder] = useState('1');
+  const [folders, setFolders] = useState<ExtensionFolder[]>([]);
+  const [selectedFolder, setSelectedFolder] = useState('');
   const [tags, setTags] = useState('development, research');
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [archiveError, setArchiveError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -97,6 +107,30 @@ export default function Popup() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!session) {
+      setFolders([]);
+      setSelectedFolder('');
+      return;
+    }
+
+    let cancelled = false;
+
+    fetchFolders(session.token)
+      .then((list) => {
+        if (cancelled) return;
+        setFolders(list);
+        setSelectedFolder((current) => current || list[0]?.id || '');
+      })
+      .catch(() => {
+        if (!cancelled) setFolders([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session]);
+
   const handleLogin = async (email: string, password: string) => {
     setAuthBusy(true);
     setAuthError(null);
@@ -118,14 +152,41 @@ export default function Popup() {
     setStatus('signed-out');
   };
 
-  const handleArchive = () => {
+  const handleArchive = async () => {
+    if (!session) return;
+
+    if (!/^https?:/i.test(tabInfo.url)) {
+      setArchiveError('Open a regular http(s) page to archive it.');
+      return;
+    }
+
     setLoading(true);
-    // TODO: POST /api/v1/resources once the resources endpoint exists.
-    setTimeout(() => {
-      setLoading(false);
+    setArchiveError(null);
+
+    try {
+      await saveResource(session.token, {
+        url: tabInfo.url,
+        title: tabInfo.title,
+        folderId: selectedFolder || undefined,
+        tags: tags
+          .split(',')
+          .map((tag) => tag.trim().toLowerCase())
+          .filter(Boolean)
+          .slice(0, 6),
+      });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    }, 700);
+    } catch (error) {
+      if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+        await signOut();
+        setSession(null);
+        setStatus('signed-out');
+        return;
+      }
+      setArchiveError(error instanceof Error ? error.message : 'Could not archive this page.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (status === 'loading') {
@@ -216,10 +277,12 @@ export default function Popup() {
           value={selectedFolder}
           onChange={(event) => setSelectedFolder(event.target.value)}
           className="w-full rounded-xl border border-white/10 bg-slate-800 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-          <option value="1">📁 Web Development</option>
-          <option value="2">📁 University</option>
-          <option value="3">📁 Research</option>
-          <option value="4">📁 Inspiration</option>
+          {folders.length === 0 && <option value="">No folders yet</option>}
+          {folders.map((folder) => (
+            <option key={folder.id} value={folder.id}>
+              {folder.name}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -239,8 +302,13 @@ export default function Popup() {
       </div>
 
       {/* Save Action Button */}
+      {archiveError && (
+        <p className="rounded-lg border border-rose-500/25 bg-rose-500/10 px-2.5 py-1.5 text-[10px] leading-relaxed text-rose-300">
+          {archiveError}
+        </p>
+      )}
       <button
-        onClick={handleArchive}
+        onClick={() => void handleArchive()}
         disabled={loading || saved}
         className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold shadow-lg transition-all ${
           saved ? 'bg-emerald-600 text-white' : 'bg-indigo-600 text-white shadow-indigo-600/30 hover:bg-indigo-500'
@@ -260,7 +328,7 @@ export default function Popup() {
 
       <div className="border-t border-white/10 pt-2 text-center">
         <a
-          href="http://localhost:5173"
+          href="http://localhost:5173/app"
           target="_blank"
           rel="noreferrer"
           className="text-[11px] text-slate-400 transition-colors hover:text-indigo-300">

@@ -127,27 +127,22 @@ All protected routes expect `Authorization: Bearer <token>`.
 Token types are encoded in the JWT `type` claim (`access`, `refresh`, `extension`). Refresh tokens are only accepted by `/auth/refresh`; extension tokens authenticate like access tokens but skip the browser refresh cycle.
 
 #### Resources (`/api/v1/resources`)
-* `POST /preview` — Live extraction of URL metadata prior to saving.
-* `POST /` — Persist resource with metadata, tags, and folder assignment.
-* `GET  /` — List resources with pagination, folder, tag, favorite, and search filters.
-* `GET  /:id` — Full resource detail, reader snapshot, and attached notes.
-* `PATCH /:id` — Update resource details, folder location, or tags.
-* `DELETE /:id` — Soft-delete or permanently remove resource.
-* `POST /:id/favorite` — Toggle resource favorite state.
-* `POST /:id/summarize` — Generate/refresh AI summary using Gemini.
+All endpoints are scoped to the authenticated user (access or extension tokens).
+
+* `GET  /` — List resources. Query params: `q`, `folderId`, `favorite=true`, `sort=newest|oldest|title`.
+* `POST /` — Archive a resource. Accepts `url`, optional `title`, `description`, `resourceType`, `folderId`, `tags[]`, and `note`. Derives kind, title, and reading time when omitted.
+* `GET  /:id` — Resource detail with folder, tags, latest note, and AI takeaways.
+* `PATCH /:id` — Update title, description, favorite state, folder (or `folderId: null` to unfile), tags, note, or resource type.
+* `DELETE /:id` — Permanently remove a resource.
 
 #### Folders (`/api/v1/folders`)
-* `POST /` — Create folder with custom name, icon, and color.
-* `GET  /` — List user's folder hierarchy with item counts.
-* `GET  /:id` — Get folder details and contained items.
-* `PATCH /:id` — Rename folder or update styling.
-* `DELETE /:id` — Delete folder.
+* `GET  /` — List folders ordered by `sortOrder`, including resource counts.
+* `POST /` — Create a folder with name, optional color, and description.
 
-#### Notes (`/api/v1/notes`)
-* `POST /` — Create markdown note.
-* `GET  /` — List all user notes.
-* `GET  /:id` — Retrieve note content and linked resource details.
-* `PATCH /:id` — Update note title or markdown body.
+New accounts start with four folders: Research, University, Web Development, and Inspiration.
+
+#### Notes
+Notes are created and updated through the resource `note` field. The workspace Notes tab is derived from resources that have an attached note; standalone notes CRUD is planned.
 * `DELETE /:id` — Delete note.
 
 #### Tags (`/api/v1/tags`)
@@ -314,7 +309,7 @@ npm run dev --workspace=apps/web
 3. Toggle on **Developer mode** in the top right.
 4. Click **Load unpacked** and select the `apps/extension/dist` folder.
 
-The popup signs in with your Arcivo email/password, stores a 90-day extension token in `chrome.storage.local`, and validates it against `GET /auth/me` on open. Sign out from the popup header to clear the session. The API must be reachable at `http://localhost:4000` (already allowed in the manifest's `host_permissions`).
+The popup signs in with your Arcivo email/password, stores a 90-day extension token in `chrome.storage.local`, and validates it against `GET /auth/me` on open. Signed-in users can archive the active tab to a real folder (`POST /resources` with title, folder, and tags); saved pages appear in the workspace immediately. Sign out from the popup header to clear the session. The API must be reachable at `http://localhost:4000` (already allowed in the manifest's `host_permissions`).
 
 ---
 

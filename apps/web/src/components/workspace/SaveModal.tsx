@@ -17,6 +17,7 @@ import {
   titleFromUrl,
   type WorkspaceFolder,
 } from '../../data/workspace';
+import { apiErrorMessage } from '../../lib/api';
 
 export interface SaveDraft {
   url: string;
@@ -30,7 +31,7 @@ interface SaveModalProps {
   folders: WorkspaceFolder[];
   defaultFolderId: string | null;
   onClose: () => void;
-  onSave: (draft: SaveDraft) => void;
+  onSave: (draft: SaveDraft) => Promise<void>;
 }
 
 type Phase = 'idle' | 'saving' | 'saved';
@@ -84,7 +85,7 @@ export function SaveModal({ open, folders, defaultFolderId, onClose, onSave }: S
   const PreviewIcon = previewMeta?.icon ?? Link2;
   const previewTitle = host ? titleFromUrl(normalized) : '';
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (phase !== 'idle') return;
 
@@ -104,8 +105,9 @@ export function SaveModal({ open, folders, defaultFolderId, onClose, onSave }: S
 
     setError('');
     setPhase('saving');
-    const saveTimer = window.setTimeout(() => {
-      onSave({
+
+    try {
+      await onSave({
         url: normalized,
         folderId: folderId || folders[0]?.id || '',
         tags: tags
@@ -115,11 +117,14 @@ export function SaveModal({ open, folders, defaultFolderId, onClose, onSave }: S
           .slice(0, 6),
         note: note.trim(),
       });
+
       setPhase('saved');
       const closeTimer = window.setTimeout(() => onClose(), 720);
       timers.current.push(closeTimer);
-    }, 780);
-    timers.current.push(saveTimer);
+    } catch (saveError) {
+      setPhase('idle');
+      setError(apiErrorMessage(saveError));
+    }
   };
 
   return (

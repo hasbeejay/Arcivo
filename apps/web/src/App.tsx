@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
+  AlertCircle,
   CheckCircle2,
   ChevronDown,
   Clock,
@@ -11,6 +12,7 @@ import {
   List,
   Menu,
   Plus,
+  RefreshCw,
   Search,
   Sparkles,
   Star,
@@ -26,20 +28,22 @@ import { SaveModal, type SaveDraft } from './components/workspace/SaveModal';
 import { ResourceDrawer } from './components/workspace/ResourceDrawer';
 import {
   folderPalette,
-  guessKind,
-  hostnameFromInput,
-  initialFolders,
-  initialResources,
   kindMeta,
   safeHostname,
   sortOptions,
   timeAgo,
-  titleFromUrl,
   type SortMode,
   type WorkspaceFolder,
   type WorkspaceResource,
   type WorkspaceTab,
 } from './data/workspace';
+import { apiErrorMessage } from './lib/api';
+import {
+  createFolder as createFolderRequest,
+  createResource,
+  fetchWorkspace,
+  updateResource,
+} from './lib/resources';
 
 function initials(name: string): string {
   return name
@@ -54,6 +58,10 @@ function greeting(hour: number): string {
   if (hour < 12) return 'Good morning';
   if (hour < 18) return 'Good afternoon';
   return 'Good evening';
+}
+
+function plural(count: number, singular: string, pluralForm = `${singular}s`): string {
+  return `${count} ${count === 1 ? singular : pluralForm}`;
 }
 
 interface EmptyStateProps {
@@ -88,8 +96,11 @@ export default function App() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
 
-  const [resources, setResources] = useState<WorkspaceResource[]>(initialResources);
-  const [folders, setFolders] = useState<WorkspaceFolder[]>(initialFolders);
+  const [resources, setResources] = useState<WorkspaceResource[]>([]);
+  const [folders, setFolders] = useState<WorkspaceFolder[]>([]);
+  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [loadError, setLoadError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
   const [tab, setTab] = useState<WorkspaceTab>('home');
   const [folderId, setFolderId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
@@ -98,11 +109,36 @@ export default function App() {
   const [saveOpen, setSaveOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [toast, setToast] = useState<{ title: string; body: string } | null>(null);
+  const [toast, setToast] = useState<{ title: string; body: string; tone: 'success' | 'error' } | null>(
+    null,
+  );
 
   const searchRef = useRef<HTMLInputElement | null>(null);
   const toastTimer = useRef<number | null>(null);
   const [now] = useState(() => new Date());
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoadState('loading');
+    setLoadError('');
+
+    fetchWorkspace()
+      .then((snapshot) => {
+        if (cancelled) return;
+        setResources(snapshot.resources);
+        setFolders(snapshot.folders);
+        setLoadState('ready');
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setLoadError(apiErrorMessage(error));
+        setLoadState('error');
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
   const folderCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -201,8 +237,8 @@ export default function App() {
     };
   }, []);
 
-  const notify = (title: string, body: string) => {
-    setToast({ title, body });
+  const notify = (title: string, body: string, tone: 'success' | 'error' = 'success') => {
+    setToast({ title, body, tone });
     if (toastTimer.current) window.clearTimeout(toastTimer.current);
     toastTimer.current = window.setTimeout(() => setToast(null), 3400);
   };
@@ -219,68 +255,55 @@ export default function App() {
     setSidebarOpen(false);
   };
 
-  const toggleFavorite = (id: string) => {
-    setResources((current) =>
-      current.map((resource) =>
-        resource.id === id ? { ...resource, isFavorite: !resource.isFavorite } : resource,
-      ),
-    );
+  const toggleFavorite = async (id: string) => {
     const resource = resources.find((item) => item.id === id);
-    if (resource) {
-      notify(
-        resource.isFavorite ? 'Removed from favorites' : 'Added to favorites',
-        resource.title,
+    if (!resource) return;
+
+    const nextFavorite = !resource.isFavorite;
+    setResources((current) =>
+      current.map((item) => (item.id === id ? { ...item, isFavorite: nextFavorite } : item)),
+    );
+    notify(nextFavorite ? 'Added to favorites' : 'Removed from favorites', resource.title);
+
+    try {
+      await updateResource(id, { isFavorite: nextFavorite });
+    } catch (error) {
+      setResources((current) =>
+        current.map((item) =>
+          item.id === id ? { ...item, isFavorite: resource.isFavorite } : item,
+        ),
       );
+      notify('Could not update favorite', apiErrorMessage(error), 'error');
     }
   };
 
-  const handleSave = (draft: SaveDraft) => {
+  const handleSave = async (draft: SaveDraft) => {
     const folder = folders.find((item) => item.id === draft.folderId) ?? folders[0];
-    const kind = guessKind(draft.url);
-    const host = hostnameFromInput(draft.url) ?? 'the web';
-    const readingByKind: Record<string, number> = {
-      article: 7,
-      video: 38,
-      book: 240,
-      paper: 26,
-      code: 9,
-      thread: 6,
-    };
-
-    const resource: WorkspaceResource = {
-      id: `res-${Date.now()}`,
+    const created = await createResource({
       url: draft.url,
-      title: titleFromUrl(draft.url),
-      description: `Saved from ${host}. Arcivo is preparing a reader copy and drawing out the parts worth remembering.`,
-      kind,
-      folderId: folder?.id ?? 'research',
+      folderId: draft.folderId || folder?.id,
       tags: draft.tags,
-      isFavorite: false,
-      createdAt: new Date().toISOString(),
-      readingMinutes: readingByKind[kind] ?? 8,
-      hasSnapshot: true,
-      aiSummary: [],
-      note: draft.note
-        ? { title: 'Quick note', body: draft.note, updatedAt: new Date().toISOString() }
-        : undefined,
-    };
+      note: draft.note,
+    });
 
-    setResources((current) => [resource, ...current]);
+    setResources((current) => [created, ...current]);
     setTab('home');
     setFolderId(null);
     setQuery('');
-    notify(`Saved to ${folder?.name ?? 'your archive'}`, resource.title);
+    notify(`Saved to ${folder?.name ?? 'your archive'}`, created.title);
   };
 
-  const createFolder = (name: string) => {
-    const folder: WorkspaceFolder = {
-      id: `folder-${Date.now()}`,
-      name,
-      color: folderPalette[folders.length % folderPalette.length],
-      description: 'Your new collection',
-    };
-    setFolders((current) => [...current, folder]);
-    notify('Folder created', name);
+  const handleCreateFolder = async (name: string) => {
+    try {
+      const folder = await createFolderRequest({
+        name,
+        color: folderPalette[folders.length % folderPalette.length],
+      });
+      setFolders((current) => [...current, folder]);
+      notify('Folder created', name);
+    } catch (error) {
+      notify('Could not create folder', apiErrorMessage(error), 'error');
+    }
   };
 
   const totalCount = resources.length;
@@ -329,7 +352,7 @@ export default function App() {
     onSelectTab: selectTab,
     onSelectFolder: selectFolder,
     onArchive: () => setSaveOpen(true),
-    onCreateFolder: createFolder,
+    onCreateFolder: (name: string) => void handleCreateFolder(name),
     onLogout: logout,
   };
 
@@ -430,8 +453,9 @@ export default function App() {
                 <span className="font-display text-gradient italic tracking-normal">{firstName}.</span>
               </h1>
               <p className="mt-2 max-w-xl text-[12.5px] leading-relaxed text-app-muted">
-                {totalCount} saves across {folders.length} folders. {favoriteCount} favorites, {noteCount} notes —
-                here is what is worth reopening.
+                {plural(totalCount, 'save')} across {plural(folders.length, 'folder')}.{' '}
+                {plural(favoriteCount, 'favorite')}, {plural(noteCount, 'note')} — here is what is
+                worth reopening.
               </p>
             </div>
 
@@ -514,7 +538,7 @@ export default function App() {
                   <h2 className="text-[10px] font-semibold uppercase tracking-[0.16em] text-app-subtle">
                     Jump back in
                   </h2>
-                  <span className="text-[10px] text-app-subtle">{folders.length} folders</span>
+                  <span className="text-[10px] text-app-subtle">{plural(folders.length, 'folder')}</span>
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
                   {folders.map((folder) => (
@@ -534,7 +558,7 @@ export default function App() {
                           <FolderIcon className="h-4 w-4" />
                         </span>
                         <span className="text-[10px] tabular-nums text-app-subtle">
-                          {folderCounts[folder.id] ?? 0} saves
+                          {plural(folderCounts[folder.id] ?? 0, 'save')}
                         </span>
                       </div>
                       <p className="relative mt-2.5 truncate text-[12.5px] font-semibold text-app-text">
@@ -660,7 +684,29 @@ export default function App() {
           </div>
 
           {/* Content */}
-          {isNotesTab ? (
+          {loadState === 'loading' ? (
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="h-[264px] animate-pulse rounded-2xl border border-app-border/10 bg-app-card/40"
+                />
+              ))}
+            </div>
+          ) : loadState === 'error' ? (
+            <div className="mt-5 flex flex-col items-center justify-center rounded-2xl border border-dashed border-rose-500/25 bg-rose-500/5 px-6 py-14 text-center">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-rose-500/20 bg-rose-500/10 text-rose-500">
+                <AlertCircle className="h-5 w-5" />
+              </span>
+              <h3 className="mt-4 text-sm font-bold text-app-text">Could not load your archive</h3>
+              <p className="mt-1 max-w-sm text-[11.5px] leading-relaxed text-app-muted">{loadError}</p>
+              <button
+                onClick={() => setReloadKey((key) => key + 1)}
+                className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-app-text px-3.5 py-2 text-[11px] font-semibold text-app-bg transition-transform hover:-translate-y-0.5">
+                <RefreshCw className="h-3 w-3" /> Try again
+              </button>
+            </div>
+          ) : isNotesTab ? (
             notes.length > 0 ? (
               <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {notes.map((resource) => {
@@ -804,8 +850,17 @@ export default function App() {
               exit={{ opacity: 0, y: 12, scale: 0.97 }}
               transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
               className="pointer-events-auto flex items-center gap-2.5 rounded-xl border border-app-border/10 bg-app-panel/95 px-4 py-2.5 shadow-2xl backdrop-blur-xl">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-500">
-                <CheckCircle2 className="h-3.5 w-3.5" />
+              <span
+                className={`flex h-6 w-6 items-center justify-center rounded-full ${
+                  toast.tone === 'error'
+                    ? 'bg-rose-500/15 text-rose-500'
+                    : 'bg-emerald-500/15 text-emerald-500'
+                }`}>
+                {toast.tone === 'error' ? (
+                  <AlertCircle className="h-3.5 w-3.5" />
+                ) : (
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                )}
               </span>
               <div className="min-w-0">
                 <p className="text-[11px] font-semibold text-app-text">{toast.title}</p>

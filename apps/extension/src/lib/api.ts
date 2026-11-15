@@ -26,6 +26,28 @@ interface ExtensionTokenResponse {
   user: ExtensionUser;
 }
 
+export interface ExtensionFolder {
+  id: string;
+  name: string;
+  color: string;
+  description: string;
+  count: number;
+}
+
+export interface SaveResourceInput {
+  url: string;
+  title: string;
+  folderId?: string;
+  tags?: string[];
+}
+
+export interface SavedResource {
+  id: string;
+  url: string;
+  title: string;
+  folderId: string | null;
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   let response: Response;
   try {
@@ -99,6 +121,28 @@ export async function signIn(email: string, password: string): Promise<StoredSes
 export async function fetchCurrentUser(token: string): Promise<ExtensionUser> {
   return request<ExtensionUser>('/auth/me', {
     headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function fetchFolders(token: string): Promise<ExtensionFolder[]> {
+  return request<ExtensionFolder[]>('/folders', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function saveResource(
+  token: string,
+  input: SaveResourceInput,
+): Promise<SavedResource> {
+  return request<SavedResource>('/resources', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({
+      url: input.url,
+      title: input.title,
+      ...(input.folderId ? { folderId: input.folderId } : {}),
+      ...(input.tags && input.tags.length > 0 ? { tags: input.tags } : {}),
+    }),
   });
 }
 
