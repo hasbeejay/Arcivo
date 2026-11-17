@@ -68,6 +68,7 @@ export default function Desktop() {
     activeWindow,
     activeId: focusedWindowId,
     openFinder,
+    newFinderWindow,
     openSettings,
     focus,
     close,
@@ -205,9 +206,20 @@ export default function Desktop() {
   const activeApp = activeWindow?.app ?? null;
 
   const navigateFinder = (location: FinderLocation) => {
-    const finder = windows.find((item) => item.app === 'finder');
+    const finder =
+      windows.find(
+        (item) => item.id === focusedWindowId && item.app === 'finder' && !item.minimized,
+      ) ??
+      [...windows]
+        .filter((item) => item.app === 'finder' && !item.minimized)
+        .sort((a, b) => b.z - a.z)[0];
     if (finder) navigate(finder.id, location);
-    else openFinder(location);
+    else newFinderWindow(location);
+  };
+
+  const openNewFinder = (location?: FinderLocation) => {
+    if (location) newFinderWindow(location);
+    else openFinder();
   };
 
   const handleToggleFavorite = async (id: string) => {
@@ -295,7 +307,7 @@ export default function Desktop() {
         folders={folders}
         user={user}
         resourceCount={resources.length}
-        onOpenFinder={(location) => openFinder(location)}
+        onOpenFinder={openNewFinder}
         onNewSave={() => openSave()}
         onSettings={() => openSettings()}
         onOpenAccount={openAccount}
@@ -312,13 +324,13 @@ export default function Desktop() {
           folders={folders}
           counts={counts}
           folderCounts={folderCounts}
-          onOpenFinder={(location) => openFinder(location)}
+          onOpenFinder={openNewFinder}
         />
       )}
 
       <div className="pointer-events-none absolute inset-0 z-10">
         <AnimatePresence>
-          {(compact ? windows.filter((item) => item.id === focusedWindowId) : windows.filter((item) => !item.minimized))
+          {(compact ? windows.filter((item) => item.id === focusedWindowId) : windows)
             .map((item) => (
             <Window
               key={item.id}
@@ -360,7 +372,7 @@ export default function Desktop() {
                   onToggleTheme={toggleTheme}
                   onLogout={logout}
                   onRefresh={refresh}
-                  onOpenFinder={(location) => openFinder(location)}
+                  onOpenFinder={openNewFinder}
                   onNewSave={() => openSave()}
                 />
               )}
@@ -376,7 +388,7 @@ export default function Desktop() {
         finderOpen={finderOpen}
         avatarUrl={user?.avatarUrl}
         initials={initialsOf(user?.fullName ?? '')}
-        onOpenFinder={(location) => openFinder(location)}
+        onOpenFinder={openNewFinder}
         onOpenSettings={() => openSettings()}
         onOpenSpotlight={() => setSpotlightOpen(true)}
         onNewSave={() => openSave()}
@@ -390,7 +402,7 @@ export default function Desktop() {
         resources={resources}
         folders={folders}
         onClose={() => setSpotlightOpen(false)}
-        onNavigate={(location) => openFinder(location)}
+        onNavigate={(location) => newFinderWindow(location)}
         onOpenResource={setActiveId}
         onNewSave={() => openSave()}
         onSettings={() => openSettings()}

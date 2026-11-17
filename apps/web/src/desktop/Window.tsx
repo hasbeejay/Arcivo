@@ -35,15 +35,21 @@ export function Window({
   onToggleZoom,
   onBoundsChange,
 }: WindowProps) {
-  const { id, title, bounds, z, maximized, app } = windowState;
+  const { id, title, bounds, z, maximized, minimized, app } = windowState;
   const [interacting, setInteracting] = useState<'drag' | 'resize' | null>(null);
   const stopRef = useRef<(() => void) | null>(null);
+  const sectionRef = useRef<HTMLElement | null>(null);
   const prefersReducedMotion = useReducedMotion();
   const AppIcon = app === 'finder' ? Folder : SettingsIcon;
 
   useEffect(() => {
     return () => stopRef.current?.();
   }, []);
+
+  useEffect(() => {
+    const element = sectionRef.current;
+    if (element) element.inert = minimized;
+  }, [minimized]);
 
   const beginInteraction = useCallback(
     (event: React.PointerEvent, mode: 'drag' | 'resize', direction?: ResizeDirection) => {
@@ -126,19 +132,35 @@ export function Window({
     { dir: 'se', className: 'bottom-0 right-0 h-3 w-3 cursor-nwse-resize' },
   ];
 
+  const dockY = window.innerHeight - 54 - (bounds.y + bounds.height / 2);
+  const minimizedAnimation = prefersReducedMotion
+    ? { opacity: 0, scale: 1, y: 0, transition: { duration: 0.12 } }
+    : { opacity: 0, scale: 0.32, y: dockY, transition: { duration: 0.34, ease: [0.4, 0, 0.85, 0.6] as const } };
+  const restoredAnimation = prefersReducedMotion
+    ? { opacity: 1, scale: 1, y: 0, transition: { duration: 0.12 } }
+    : { opacity: 1, scale: 1, y: 0, transition: { type: 'spring' as const, stiffness: 320, damping: 30, mass: 0.8 } };
+
   return (
     <motion.section
+      ref={sectionRef}
       aria-label={`${title} window`}
+      aria-hidden={minimized || undefined}
       initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.96, y: 16 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: 10 }}
-      transition={
+      animate={minimized ? minimizedAnimation : restoredAnimation}
+      exit={
         prefersReducedMotion
-          ? { duration: 0.12 }
-          : { type: 'spring', stiffness: 360, damping: 31, mass: 0.7 }
+          ? { opacity: 0 }
+          : { opacity: 0, scale: 0.97, y: 10, transition: { duration: 0.18 } }
       }
       onPointerDown={() => onFocus(id)}
-      style={{ left: bounds.x, top: bounds.y, width: bounds.width, height: bounds.height, zIndex: z }}
+      style={{
+        left: bounds.x,
+        top: bounds.y,
+        width: bounds.width,
+        height: bounds.height,
+        zIndex: z,
+        pointerEvents: minimized ? 'none' : undefined,
+      }}
       className={`desktop-window pointer-events-auto absolute flex flex-col overflow-hidden rounded-[14px] ${
         active ? 'desktop-window-active' : 'desktop-window-idle'
       } ${interacting ? 'desktop-window-busy' : ''} ${maximized ? 'desktop-window-maximized' : ''}`}>
@@ -150,23 +172,35 @@ export function Window({
           <button
             type="button"
             onClick={() => onClose(id)}
+            title="Close"
             aria-label={`Close ${title} window`}
-            className="group/light flex h-3 w-3 items-center justify-center rounded-full bg-brand-berry-500 shadow-sm transition-transform active:scale-90">
-            <X className="h-2 w-2 text-brand-ink opacity-0 transition-opacity group-hover/traffic:opacity-80" strokeWidth={3.2} />
+            className="group/light flex h-3 w-3 items-center justify-center rounded-full bg-brand-berry-500 shadow-sm transition-all duration-150 hover:scale-125 hover:brightness-110 active:scale-90">
+            <X
+              className="h-2 w-2 text-brand-ink opacity-0 transition-opacity group-hover/traffic:opacity-70 group-hover/light:opacity-100"
+              strokeWidth={3.2}
+            />
           </button>
           <button
             type="button"
             onClick={() => onMinimize(id)}
+            title="Minimize"
             aria-label={`Minimize ${title} window`}
-            className="flex h-3 w-3 items-center justify-center rounded-full bg-brand-caramel-400 shadow-sm transition-transform active:scale-90">
-            <Minus className="h-2 w-2 text-brand-ink opacity-0 transition-opacity group-hover/traffic:opacity-80" strokeWidth={3.2} />
+            className="group/minimize flex h-3 w-3 items-center justify-center rounded-full bg-brand-caramel-400 shadow-sm transition-all duration-150 hover:scale-125 hover:brightness-110 active:scale-90">
+            <Minus
+              className="h-2 w-2 text-brand-ink opacity-0 transition-opacity group-hover/traffic:opacity-70 group-hover/minimize:opacity-100"
+              strokeWidth={3.2}
+            />
           </button>
           <button
             type="button"
             onClick={() => onToggleZoom(id)}
+            title={maximized ? 'Restore' : 'Zoom'}
             aria-label={maximized ? `Restore ${title} window` : `Zoom ${title} window`}
-            className="flex h-3 w-3 items-center justify-center rounded-full bg-brand-sage-500 shadow-sm transition-transform active:scale-90">
-            <Maximize2 className="h-1.5 w-1.5 text-brand-ink opacity-0 transition-opacity group-hover/traffic:opacity-80" strokeWidth={3.2} />
+            className="group/zoom flex h-3 w-3 items-center justify-center rounded-full bg-brand-sage-500 shadow-sm transition-all duration-150 hover:scale-125 hover:brightness-110 active:scale-90">
+            <Maximize2
+              className="h-1.5 w-1.5 text-brand-ink opacity-0 transition-opacity group-hover/traffic:opacity-70 group-hover/zoom:opacity-100"
+              strokeWidth={3.2}
+            />
           </button>
         </div>
 

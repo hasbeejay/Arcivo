@@ -76,6 +76,7 @@ export interface WindowsApi {
   activeId: string | null;
   activeWindow: DesktopWindowState | null;
   openFinder: (location?: FinderLocation) => void;
+  newFinderWindow: (location?: FinderLocation) => void;
   openSettings: () => void;
   focus: (id: string) => void;
   close: (id: string) => void;
@@ -100,13 +101,28 @@ export function useWindows({ folders }: UseWindowsOptions): WindowsApi {
   }, []);
 
   const makeWindow = useCallback(
-    (app: DesktopApp, finder: FinderLocation, title: string, z: number): DesktopWindowState => {
+    (
+      app: DesktopApp,
+      finder: FinderLocation,
+      title: string,
+      z: number,
+      cascade = 0,
+    ): DesktopWindowState => {
       seqRef.current += 1;
+      const bounds = defaultBounds(app);
+      if (cascade > 0 && app === 'finder' && window.innerWidth >= COMPACT_BREAKPOINT) {
+        const step = (cascade % 6) * 26;
+        bounds.x = Math.min(bounds.x + step, Math.max(8, window.innerWidth - 260));
+        bounds.y = Math.min(
+          bounds.y + step,
+          Math.max(MENUBAR_HEIGHT + 8, window.innerHeight - 160),
+        );
+      }
       return {
         id: `${app}-${seqRef.current}`,
         app,
         title,
-        bounds: defaultBounds(app),
+        bounds,
         z,
         minimized: false,
         maximized: false,
@@ -121,7 +137,9 @@ export function useWindows({ folders }: UseWindowsOptions): WindowsApi {
     (location?: FinderLocation) => {
       const z = bumpZ();
       setWindows((current) => {
-        const existing = current.find((item) => item.app === 'finder');
+        const existing = [...current]
+          .filter((item) => item.app === 'finder')
+          .sort((a, b) => b.z - a.z)[0];
         if (existing) {
           const nextLocation = location ?? existing.finder ?? ALL_SAVES;
           const changed = !sameLocation(nextLocation, existing.finder ?? ALL_SAVES);
@@ -140,6 +158,27 @@ export function useWindows({ folders }: UseWindowsOptions): WindowsApi {
         }
         const start = location ?? ALL_SAVES;
         return [...current, makeWindow('finder', start, locationTitle(start, foldersRef.current), z)];
+      });
+    },
+    [bumpZ, makeWindow],
+  );
+
+  const newFinderWindow = useCallback(
+    (location?: FinderLocation) => {
+      const z = bumpZ();
+      setWindows((current) => {
+        const cascade = current.filter((item) => item.app === 'finder').length;
+        const start = location ?? ALL_SAVES;
+        return [
+          ...current,
+          makeWindow(
+            'finder',
+            start,
+            locationTitle(start, foldersRef.current),
+            z,
+            cascade,
+          ),
+        ];
       });
     },
     [bumpZ, makeWindow],
@@ -291,6 +330,7 @@ export function useWindows({ folders }: UseWindowsOptions): WindowsApi {
     activeId: activeWindow?.id ?? null,
     activeWindow,
     openFinder,
+    newFinderWindow,
     openSettings,
     focus,
     close,
