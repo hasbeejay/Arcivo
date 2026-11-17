@@ -1,5 +1,4 @@
 import type { ResourceKind } from '../data/workspace';
-import { kindMeta } from '../data/workspace';
 
 export type SmartView = 'all' | 'liked' | 'recent' | 'notes';
 
@@ -34,6 +33,15 @@ export const MENUBAR_HEIGHT = 30;
 export const DOCK_HEIGHT = 86;
 export const WINDOW_MARGIN = 12;
 
+const kindTitles: Record<ResourceKind, string> = {
+  article: 'Articles',
+  video: 'Videos',
+  book: 'Books',
+  paper: 'Papers',
+  code: 'Code',
+  thread: 'Threads',
+};
+
 const smartTitles: Record<SmartView, string> = {
   all: 'All Saves',
   liked: 'Liked',
@@ -53,7 +61,7 @@ export function locationTitle(
   if (location.type === 'folder') {
     return folders.find((folder) => folder.id === location.id)?.name ?? 'Folder';
   }
-  return kindMeta[location.id].label;
+  return kindTitles[location.id];
 }
 
 export function smartLocation(id: SmartView): FinderLocation {

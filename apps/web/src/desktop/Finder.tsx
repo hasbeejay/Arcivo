@@ -74,22 +74,26 @@ const kindPlural: Record<ResourceKind, string> = {
   thread: 'Threads',
 };
 
-const viewCopy: Record<SmartView, { subtitle: string; empty: string }> = {
+const viewCopy: Record<SmartView, { subtitle: string; emptyTitle: string; empty: string }> = {
   all: {
     subtitle: 'Everything you have archived, in one place.',
-    empty: 'Your archive is empty. Save your first page to get started.',
+    emptyTitle: 'Your archive is empty',
+    empty: 'Save your first page and it will show up here.',
   },
   liked: {
     subtitle: 'The saves you keep coming back to.',
-    empty: 'No favorites yet. Tap the star on any save to keep it here.',
+    emptyTitle: 'Nothing liked yet',
+    empty: 'Tap the star on any save to keep it in this folder.',
   },
   recent: {
     subtitle: 'The newest additions to your archive.',
-    empty: 'Nothing saved recently. New saves will land here first.',
+    emptyTitle: 'Nothing recent',
+    empty: 'New saves will land here first.',
   },
   notes: {
     subtitle: 'Ideas and reminders attached to the things you saved.',
-    empty: 'No notes yet. Add a thought when you save or open a resource.',
+    emptyTitle: 'No notes yet',
+    empty: 'Add a thought when you save or open a resource.',
   },
 };
 
@@ -107,8 +111,14 @@ function subtitleFor(
 
 function emptyCopy(location: FinderLocation): string {
   if (location.type === 'smart') return viewCopy[location.id].empty;
-  if (location.type === 'folder') return 'This folder is empty. Save something into it.';
-  return `No ${kindMeta[location.id].label.toLowerCase()} saves yet.`;
+  if (location.type === 'folder') return 'Save a link into this folder to keep it here.';
+  return `Save a ${kindMeta[location.id].label.toLowerCase()} from the web and it will appear here.`;
+}
+
+function emptyTitle(location: FinderLocation): string {
+  if (location.type === 'smart') return viewCopy[location.id].emptyTitle;
+  if (location.type === 'folder') return 'This folder is empty';
+  return `No ${kindMeta[location.id].label.toLowerCase()} saves yet`;
 }
 
 function matchesQuery(resource: WorkspaceResource, folders: WorkspaceFolder[], query: string): boolean {
@@ -599,7 +609,7 @@ export function Finder({
           ) : (
             <FinderEmpty
               icon={hasQuery ? Search : location.type === 'smart' && location.id === 'liked' ? Star : Sparkles}
-              title={hasQuery ? 'Nothing matches that search' : emptyCopy(location).split('.')[0]}
+              title={hasQuery ? 'Nothing matches that search' : emptyTitle(location)}
               body={
                 hasQuery
                   ? 'Try a shorter word, a tag, or a folder name. Search looks through titles, notes and AI takeaways.'

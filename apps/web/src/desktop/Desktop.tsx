@@ -420,7 +420,9 @@ export default function Desktop() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-            className="pointer-events-auto absolute left-1/2 top-9 z-[100] flex w-[min(420px,calc(100vw-24px))] -translate-x-1/2 items-start gap-2.5 rounded-xl border border-app-border/12 bg-app-panel/95 px-3 py-2.5 shadow-2xl backdrop-blur-2xl">
+            className={`pointer-events-auto absolute top-9 z-[100] flex w-[min(380px,calc(100vw-24px))] items-start gap-2.5 rounded-xl border border-app-border/12 bg-app-panel/95 px-3 py-2.5 shadow-2xl backdrop-blur-2xl ${
+              compact ? 'left-1/2 -translate-x-1/2' : 'right-3'
+            }`}>
             <span
               className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg ${
                 toast.tone === 'success'
