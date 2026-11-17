@@ -72,7 +72,7 @@ export function ResourceDrawer({ resource, folder, onClose, onToggleFavorite }: 
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 flex justify-end">
+          className="fixed inset-0 z-[80] flex justify-end">
           <div
             aria-hidden="true"
             onClick={onClose}
