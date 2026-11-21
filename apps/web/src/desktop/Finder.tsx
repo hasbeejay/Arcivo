@@ -538,7 +538,7 @@ export function Finder({
                         animationDelay: `${Math.min(index * 40, 240)}ms`,
                         borderTopColor: folder?.color ?? 'rgb(var(--app-accent) / 0.5)',
                       }}
-                      className="animate-float-in group flex flex-col rounded-2xl border border-app-border/10 border-t-2 bg-app-card/55 p-3.5 text-left backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:border-app-accent/30 hover:shadow-lg">
+                      className="animate-float-in group flex flex-col rounded-2xl border border-app-border/10 border-t-2 bg-app-card/85 p-3.5 text-left transition-[transform,border-color,background-color,box-shadow] hover:-translate-y-0.5 hover:border-app-accent/30 hover:shadow-lg">
                       <div className="flex items-center justify-between gap-2">
                         <span className="flex min-w-0 items-center gap-1.5 text-[9.5px] font-semibold uppercase tracking-[0.1em] text-app-subtle">
                           <FolderIcon className="h-3 w-3 shrink-0" style={{ color: folder?.color }} />

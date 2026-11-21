@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { useReducedMotion } from 'motion/react';
 import {
   Folder,
@@ -36,49 +36,10 @@ interface DockProps {
   onOpenAccount: () => void;
 }
 
-function useDockMagnification(
-  mouseX: number | null,
-  compact: boolean,
-  layoutKey: number,
-) {
-  const ref = useRef<HTMLButtonElement | null>(null);
-  const [center, setCenter] = useState<number | null>(null);
-  const prefersReducedMotion = useReducedMotion();
-
-  useLayoutEffect(() => {
-    const measure = () => {
-      const element = ref.current;
-      if (element) {
-        const rect = element.getBoundingClientRect();
-        setCenter(rect.left + rect.width / 2);
-      }
-    };
-    measure();
-    const timer = window.setTimeout(measure, 90);
-    window.addEventListener('resize', measure);
-    return () => {
-      window.clearTimeout(timer);
-      window.removeEventListener('resize', measure);
-    };
-  }, [compact, layoutKey]);
-
-  const resting = prefersReducedMotion || mouseX === null || center === null;
-  const distance = resting ? Number.POSITIVE_INFINITY : Math.abs(mouseX - center);
-  const influence = Math.exp(-Math.pow(distance / (compact ? 62 : 74), 2));
-  const scale = resting ? 1 : 1 + influence * (compact ? 0.3 : 0.38);
-
-  const style: CSSProperties = {
-    transform: `scale(${scale})`,
-    transformOrigin: 'bottom center',
-    transition: prefersReducedMotion
-      ? 'none'
-      : resting
-        ? 'transform 300ms cubic-bezier(0.22, 1, 0.36, 1)'
-        : 'transform 70ms linear',
-    willChange: 'transform',
-  };
-
-  return { ref, style, zIndex: Math.round(scale * 100) };
+interface DockItem {
+  button: HTMLButtonElement;
+  wrapper: HTMLElement;
+  center: number;
 }
 
 export function Dock({
@@ -95,9 +56,97 @@ export function Dock({
   onRestoreWindow,
   onOpenAccount,
 }: DockProps) {
-  const [mouseX, setMouseX] = useState<number | null>(null);
+  const dockRef = useRef<HTMLDivElement | null>(null);
+  const itemsRef = useRef<DockItem[]>([]);
+  const mouseXRef = useRef<number | null>(null);
+  const frameRef = useRef(0);
+  const hoveringRef = useRef(false);
+  const prefersReducedMotion = useReducedMotion();
   const minimized = windows.filter((item) => item.minimized);
-  const layoutKey = windows.length;
+
+  const measure = useCallback(() => {
+    const dock = dockRef.current;
+    if (!dock) return;
+    const left = dock.getBoundingClientRect().left;
+    const items: DockItem[] = [];
+    dock.querySelectorAll<HTMLElement>('[data-dock-item]').forEach((wrapper) => {
+      const button = wrapper.querySelector<HTMLButtonElement>('[data-dock-magnify]');
+      if (!button) return;
+      items.push({
+        button,
+        wrapper,
+        center: left + wrapper.offsetLeft + wrapper.offsetWidth / 2,
+      });
+    });
+    itemsRef.current = items;
+  }, []);
+
+  useLayoutEffect(() => {
+    measure();
+    const timer = window.setTimeout(measure, 120);
+    const dock = dockRef.current;
+    const observer =
+      typeof ResizeObserver !== 'undefined' && dock ? new ResizeObserver(measure) : null;
+    if (dock && observer) observer.observe(dock);
+    window.addEventListener('resize', measure);
+    return () => {
+      window.clearTimeout(timer);
+      observer?.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [measure, compact, windows.length]);
+
+  const paint = useCallback(() => {
+    frameRef.current = 0;
+    const x = mouseXRef.current;
+    if (x === null) return;
+    const radius = compact ? 62 : 74;
+    const strength = compact ? 0.3 : 0.38;
+    for (const item of itemsRef.current) {
+      const influence = Math.exp(-Math.pow(Math.abs(x - item.center) / radius, 2));
+      const scale = 1 + influence * strength;
+      item.button.style.transform = `scale(${scale.toFixed(4)})`;
+      item.wrapper.style.zIndex = String(Math.round(scale * 100));
+    }
+  }, [compact]);
+
+  const handleMove = (event: React.MouseEvent) => {
+    if (prefersReducedMotion) return;
+    mouseXRef.current = event.clientX;
+    if (!hoveringRef.current) {
+      hoveringRef.current = true;
+      for (const item of itemsRef.current) {
+        item.button.style.transition = 'transform 70ms linear';
+      }
+    }
+    if (!frameRef.current) frameRef.current = requestAnimationFrame(paint);
+  };
+
+  const handleLeave = () => {
+    if (prefersReducedMotion) return;
+    hoveringRef.current = false;
+    mouseXRef.current = null;
+    if (frameRef.current) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = 0;
+    }
+    for (const item of itemsRef.current) {
+      item.button.style.transition = 'transform 300ms cubic-bezier(0.22, 1, 0.36, 1)';
+      item.button.style.transform = 'scale(1)';
+      item.wrapper.style.zIndex = '1';
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    };
+  }, []);
+
+  // Keep magnification correct when items are added/removed mid-hover.
+  useEffect(() => {
+    if (mouseXRef.current !== null) paint();
+  }, [paint, compact, windows.length]);
 
   const primary: DockAction[] = [
     {
@@ -148,20 +197,15 @@ export function Dock({
 
   return (
     <div
+      ref={dockRef}
       aria-label="Arcivo dock"
       className={`glass-dock absolute left-1/2 z-50 flex -translate-x-1/2 items-end rounded-[22px] shadow-[0_18px_60px_-12px_rgba(42,54,59,0.5)] ${
         compact ? 'bottom-1.5 gap-1 px-2 pb-1.5 pt-2' : 'bottom-2.5 gap-2 px-3 pb-2 pt-2.5'
       }`}
-      onMouseMove={(event) => setMouseX(event.clientX)}
-      onMouseLeave={() => setMouseX(null)}>
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}>
       {primary.map((action) => (
-        <DockButton
-          key={action.id}
-          action={action}
-          mouseX={mouseX}
-          compact={compact}
-          layoutKey={layoutKey}
-        />
+        <DockButton key={action.id} action={action} compact={compact} />
       ))}
 
       {minimized.length > 0 && <DockDivider compact={compact} />}
@@ -179,9 +223,7 @@ export function Dock({
                 : 'from-brand-mist-400 via-brand-ink-500 to-brand-ink-700',
             onClick: () => onRestoreWindow(item.id),
           }}
-          mouseX={mouseX}
           compact={compact}
-          layoutKey={layoutKey}
         />
       ))}
 
@@ -191,9 +233,7 @@ export function Dock({
         avatarUrl={avatarUrl}
         initials={initials}
         onClick={onOpenAccount}
-        mouseX={mouseX}
         compact={compact}
-        layoutKey={layoutKey}
       />
     </div>
   );
@@ -210,33 +250,25 @@ function DockDivider({ compact }: { compact: boolean }) {
 
 function DockButton({
   action,
-  mouseX,
   compact,
-  layoutKey,
 }: {
   action: DockAction;
-  mouseX: number | null;
   compact: boolean;
-  layoutKey: number;
 }) {
-  const { ref, style, zIndex } = useDockMagnification(mouseX, compact, layoutKey);
   const Icon = action.icon;
 
   return (
-    <div
-      style={{ zIndex }}
-      className="animate-dock-in group relative flex flex-col items-center">
+    <div data-dock-item className="animate-dock-in group relative flex flex-col items-center">
       <span className="pointer-events-none absolute -top-8 z-20 whitespace-nowrap rounded-md border border-app-border/10 bg-app-panel/95 px-2 py-0.5 text-[10px] font-semibold text-app-text opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100">
         {action.label}
       </span>
       <button
-        ref={ref}
         type="button"
+        data-dock-magnify
         onClick={action.onClick}
         aria-label={action.label}
         title={action.label}
-        style={style}
-        className={`flex items-center justify-center rounded-[13px] bg-gradient-to-tr text-white shadow-md active:brightness-95 ${
+        className={`dock-magnify flex items-center justify-center rounded-[13px] bg-gradient-to-tr text-white shadow-md active:brightness-95 ${
           compact ? 'h-9 w-9' : 'h-11 w-11'
         } ${action.gradient}`}>
         <Icon className={compact ? 'h-4 w-4' : 'h-[18px] w-[18px]'} strokeWidth={2.1} />
@@ -256,33 +288,24 @@ function DockAccount({
   avatarUrl,
   initials,
   onClick,
-  mouseX,
   compact,
-  layoutKey,
 }: {
   avatarUrl?: string | null;
   initials: string;
   onClick: () => void;
-  mouseX: number | null;
   compact: boolean;
-  layoutKey: number;
 }) {
-  const { ref, style, zIndex } = useDockMagnification(mouseX, compact, layoutKey);
-
   return (
-    <div
-      style={{ zIndex }}
-      className="animate-dock-in group relative flex flex-col items-center">
+    <div data-dock-item className="animate-dock-in group relative flex flex-col items-center">
       <span className="pointer-events-none absolute -top-8 z-20 whitespace-nowrap rounded-md border border-app-border/10 bg-app-panel/95 px-2 py-0.5 text-[10px] font-semibold text-app-text opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100">
         Account
       </span>
       <button
-        ref={ref}
         type="button"
+        data-dock-magnify
         onClick={onClick}
         aria-label="Open account settings"
-        style={style}
-        className={`flex items-center justify-center overflow-hidden rounded-[13px] border border-app-border/15 bg-gradient-to-tr from-brand-berry-600 to-brand-coral-500 text-white shadow-md active:brightness-95 ${
+        className={`dock-magnify flex items-center justify-center overflow-hidden rounded-[13px] border border-app-border/15 bg-gradient-to-tr from-brand-berry-600 to-brand-coral-500 text-white shadow-md active:brightness-95 ${
           compact ? 'h-9 w-9 text-[10px]' : 'h-11 w-11 text-[11px]'
         }`}>
         {avatarUrl ? (

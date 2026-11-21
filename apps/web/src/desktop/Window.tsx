@@ -39,6 +39,8 @@ export function Window({
   const [interacting, setInteracting] = useState<'drag' | 'resize' | null>(null);
   const stopRef = useRef<(() => void) | null>(null);
   const sectionRef = useRef<HTMLElement | null>(null);
+  const liveBoundsRef = useRef<WindowBounds | null>(null);
+  const frameRef = useRef(0);
   const prefersReducedMotion = useReducedMotion();
   const AppIcon = app === 'finder' ? Folder : SettingsIcon;
 
@@ -62,24 +64,26 @@ export function Window({
       const startX = event.clientX;
       const startY = event.clientY;
       const origin: WindowBounds = { ...bounds };
+      const element = sectionRef.current;
+      const previousWillChange = element?.style.willChange ?? '';
       setInteracting(mode);
       const previousCursor = document.body.style.cursor;
       document.body.style.cursor = mode === 'drag' ? 'grabbing' : 'nwse-resize';
+      if (mode === 'drag' && element) element.style.willChange = 'transform, translate';
 
-      const handleMove = (moveEvent: PointerEvent) => {
-        const dx = moveEvent.clientX - startX;
-        const dy = moveEvent.clientY - startY;
+      const compute = (clientX: number, clientY: number): WindowBounds => {
+        const dx = clientX - startX;
+        const dy = clientY - startY;
 
         if (mode === 'drag') {
-          onBoundsChange(id, {
+          return {
             ...origin,
             x: clamp(origin.x + dx, 8 - origin.width + 140, window.innerWidth - 140),
             y: clamp(origin.y + dy, MENUBAR_HEIGHT + 2, window.innerHeight - 72),
-          });
-          return;
+          };
         }
 
-        if (!direction) return;
+        if (!direction) return origin;
         let { x, y, width, height } = origin;
 
         if (direction.includes('e')) {
@@ -100,10 +104,48 @@ export function Window({
           y = Math.max(y, MENUBAR_HEIGHT + 2);
         }
 
-        onBoundsChange(id, { x, y, width, height });
+        return { x, y, width, height };
+      };
+
+      // Paint directly during the gesture; commit to the window manager once on release.
+      const paint = () => {
+        frameRef.current = 0;
+        const next = liveBoundsRef.current;
+        const target = sectionRef.current;
+        if (!next || !target) return;
+        if (mode === 'drag') {
+          target.style.translate = `${next.x - origin.x}px ${next.y - origin.y}px`;
+          return;
+        }
+        target.style.left = `${next.x}px`;
+        target.style.top = `${next.y}px`;
+        target.style.width = `${next.width}px`;
+        target.style.height = `${next.height}px`;
+      };
+
+      const handleMove = (moveEvent: PointerEvent) => {
+        liveBoundsRef.current = compute(moveEvent.clientX, moveEvent.clientY);
+        if (!frameRef.current) frameRef.current = requestAnimationFrame(paint);
       };
 
       const stop = () => {
+        if (frameRef.current) {
+          cancelAnimationFrame(frameRef.current);
+          frameRef.current = 0;
+        }
+        const finalBounds = liveBoundsRef.current;
+        liveBoundsRef.current = null;
+        if (element) {
+          if (mode === 'drag') {
+            element.style.translate = '';
+            element.style.willChange = previousWillChange;
+            if (finalBounds) {
+              element.style.left = `${finalBounds.x}px`;
+              element.style.top = `${finalBounds.y}px`;
+            }
+          }
+        }
+        if (finalBounds) onBoundsChange(id, finalBounds);
         setInteracting(null);
         document.body.style.cursor = previousCursor;
         window.removeEventListener('pointermove', handleMove);

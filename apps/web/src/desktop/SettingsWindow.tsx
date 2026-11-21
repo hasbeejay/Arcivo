@@ -322,7 +322,7 @@ export function SettingsWindow({
 
 function Panel({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-xl border border-app-border/10 bg-app-card/45 p-3 backdrop-blur-xl ${className}`}>
+    <div className={`rounded-xl border border-app-border/10 bg-app-card/80 p-3 ${className}`}>
       {children}
     </div>
   );

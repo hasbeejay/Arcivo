@@ -66,7 +66,7 @@ function FavoriteButton({
       }}
       aria-label={resource.isFavorite ? `Remove ${resource.title} from favorites` : `Add ${resource.title} to favorites`}
       aria-pressed={resource.isFavorite}
-      className={`rounded-lg p-1.5 transition-colors ${tone === 'overlay' ? 'backdrop-blur-md' : ''} ${surface} ${className}`}>
+      className={`rounded-lg p-1.5 transition-colors ${tone === 'overlay' ? 'bg-black/30' : ''} ${surface} ${className}`}>
       <Star className={`h-3.5 w-3.5 ${star}`} />
     </button>
   );
@@ -94,7 +94,7 @@ export const ResourceCard = forwardRef<HTMLElement, ResourceCardProps>(function 
         tabIndex={0}
         onClick={open}
         onKeyDown={(event) => cardKeyActivate(event, open)}
-        className="group flex cursor-pointer items-center gap-3 rounded-2xl border border-app-border/10 bg-app-card/45 p-3 backdrop-blur-xl transition-colors hover:border-app-accent/30 hover:bg-app-card/70 sm:gap-4 sm:p-4">
+        className="group flex cursor-pointer items-center gap-3 rounded-2xl border border-app-border/10 bg-app-card/85 p-3 transition-colors hover:border-app-accent/30 hover:bg-app-card/70 sm:gap-4 sm:p-4">
         <span
           className={`relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-tr text-white shadow-md sm:h-14 sm:w-14 ${meta.gradient}`}>
           <span className="bg-dots absolute inset-0 opacity-20" />
@@ -162,27 +162,27 @@ export const ResourceCard = forwardRef<HTMLElement, ResourceCardProps>(function 
       tabIndex={0}
       onClick={open}
       onKeyDown={(event) => cardKeyActivate(event, open)}
-      className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-app-border/10 bg-app-card/45 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-app-accent/30 hover:bg-app-card/70 hover:shadow-xl hover:shadow-brand-berry-600/10">
+      className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-app-border/10 bg-app-card/85 transition-[transform,border-color,background-color,box-shadow] duration-300 hover:-translate-y-0.5 hover:border-app-accent/30 hover:bg-app-card/70 hover:shadow-xl hover:shadow-brand-berry-600/10">
       <div className={`relative h-28 overflow-hidden bg-gradient-to-tr p-3.5 ${meta.gradient}`}>
         <span className="bg-dots absolute inset-0 opacity-20" />
         <Icon className="absolute -bottom-3 -right-2 h-20 w-20 rotate-[-10deg] text-white/15 transition-transform duration-700 ease-out-expo group-hover:rotate-0 group-hover:scale-110" />
 
         <div className="relative flex items-start justify-between">
-          <span className="rounded-md border border-white/20 bg-black/25 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-white backdrop-blur-md">
+          <span className="rounded-md border border-white/20 bg-black/25 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-white">
             {meta.label}
           </span>
           <FavoriteButton resource={resource} onToggleFavorite={onToggleFavorite} />
         </div>
 
         <div className="absolute inset-x-3.5 bottom-3 flex items-center justify-between">
-          <span className="flex items-center gap-1 rounded-md border border-white/15 bg-black/25 px-1.5 py-0.5 font-mono text-[9px] text-white/90 backdrop-blur-md">
+          <span className="flex items-center gap-1 rounded-md border border-white/15 bg-black/25 px-1.5 py-0.5 font-mono text-[9px] text-white/90">
             <span className="h-1 w-1 rounded-full bg-white/80" />
             {host}
           </span>
           {resource.hasSnapshot && (
             <span
               title="Reader copy saved"
-              className="flex items-center gap-1 rounded-md border border-white/15 bg-black/25 px-1.5 py-0.5 text-[9px] text-white/90 backdrop-blur-md">
+              className="flex items-center gap-1 rounded-md border border-white/15 bg-black/25 px-1.5 py-0.5 text-[9px] text-white/90">
               <ShieldCheck className="h-2.5 w-2.5" />
               Kept
             </span>

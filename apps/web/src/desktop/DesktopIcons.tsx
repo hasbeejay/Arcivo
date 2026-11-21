@@ -100,7 +100,7 @@ export function DesktopIcons({ folders, counts, folderCounts, onOpenFinder }: De
             <span className="relative">
               {item.folderColor ? (
                 <span
-                  className="flex h-[46px] w-[46px] items-center justify-center rounded-[12px] border shadow-md backdrop-blur-md transition-transform duration-200 group-hover:-translate-y-0.5"
+                  className="flex h-[46px] w-[46px] items-center justify-center rounded-[12px] border shadow-md transition-transform duration-200 group-hover:-translate-y-0.5"
                   style={{
                     backgroundColor: `${item.folderColor}2e`,
                     borderColor: `${item.folderColor}55`,
@@ -118,7 +118,7 @@ export function DesktopIcons({ folders, counts, folderCounts, onOpenFinder }: De
                 </span>
               )}
               {item.count > 0 && (
-                <span className="absolute -right-1.5 -top-1.5 rounded-full border border-app-panel/60 bg-app-panel/90 px-1 py-px text-[8px] font-bold tabular-nums text-app-text shadow-sm backdrop-blur-md">
+                <span className="absolute -right-1.5 -top-1.5 rounded-full border border-app-panel/60 bg-app-panel/90 px-1 py-px text-[8px] font-bold tabular-nums text-app-text shadow-sm">
                   {item.count}
                 </span>
               )}
