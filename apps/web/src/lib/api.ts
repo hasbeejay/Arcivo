@@ -81,9 +81,17 @@ api.interceptors.response.use(
 
 export function apiErrorMessage(error: unknown): string {
   if (isAxiosError(error)) {
+    const status = error.response?.status;
     const message = (error.response?.data as { message?: string | string[] } | undefined)?.message;
     if (Array.isArray(message) && message.length > 0) return message[0];
-    if (typeof message === 'string' && message.length > 0) return message;
+    if (typeof message === 'string' && message.length > 0 && message !== 'Internal server error') {
+      return message;
+    }
+    // A dev proxy answers 500 with an empty body when the API process is down,
+    // and an unreachable database surfaces the same way.
+    if (status && status >= 500) {
+      return 'The Arcivo server is unavailable. Make sure the API and database are running, then try again.';
+    }
     if (error.code === 'ERR_NETWORK') {
       return 'Cannot reach the Arcivo API. Make sure it is running on port 4000.';
     }
