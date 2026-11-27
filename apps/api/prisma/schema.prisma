@@ -26,6 +26,7 @@ model User {
   googleId     String?    @unique @map("google_id")
   emailVerified Boolean   @default(false) @map("email_verified")
   fullName     String     @map("full_name")
+  username     String?    @unique
   avatarUrl    String?    @map("avatar_url")
   createdAt    DateTime   @default(now()) @map("created_at")
   updatedAt    DateTime   @updatedAt @map("updated_at")

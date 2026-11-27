@@ -48,6 +48,7 @@ interface FinderProps {
   onToggleFavorite: (id: string) => void;
   onNewSave: (folderId?: string) => void;
   onCreateFolder: (name: string) => Promise<void>;
+  onMoveResource: (resourceId: string, folderId: string) => void;
 }
 
 interface SmartItem {
@@ -154,6 +155,7 @@ export function Finder({
   onToggleFavorite,
   onNewSave,
   onCreateFolder,
+  onMoveResource,
 }: FinderProps) {
   const [query, setQuery] = useState('');
   const [view, setView] = useState<'grid' | 'list'>('grid');
@@ -322,6 +324,12 @@ export function Finder({
               label={folder.name}
               count={folderCounts[folder.id] ?? 0}
               onClick={() => onNavigate({ type: 'folder', id: folder.id })}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => {
+                event.preventDefault();
+                const resourceId = event.dataTransfer.getData('text/arcivo-resource');
+                if (resourceId) onMoveResource(resourceId, folder.id);
+              }}
             />
           ))}
 
@@ -581,21 +589,22 @@ export function Finder({
                 className="grid gap-3"
                 style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${compact ? 210 : 218}px, 1fr))` }}>
                 {visible.map((resource, index) => (
+                  <div key={resource.id} draggable onDragStart={(event) => event.dataTransfer.setData('text/arcivo-resource', resource.id)}>
                   <ResourceCard
-                    key={resource.id}
                     resource={resource}
                     folder={folders.find((folder) => folder.id === resource.folderId)}
                     onToggleFavorite={onToggleFavorite}
                     onOpen={onOpenResource}
                     index={index}
                   />
+                  </div>
                 ))}
               </div>
             ) : (
               <div className="space-y-1.5">
                 {visible.map((resource, index) => (
+                  <div key={resource.id} draggable onDragStart={(event) => event.dataTransfer.setData('text/arcivo-resource', resource.id)}>
                   <ResourceCard
-                    key={resource.id}
                     resource={resource}
                     folder={folders.find((folder) => folder.id === resource.folderId)}
                     onToggleFavorite={onToggleFavorite}
@@ -603,6 +612,7 @@ export function Finder({
                     variant="list"
                     index={index}
                   />
+                  </div>
                 ))}
               </div>
             )
@@ -663,6 +673,8 @@ function SidebarRow({
   color,
   iconClassName,
   onClick,
+  onDragOver,
+  onDrop,
 }: {
   active: boolean;
   icon: LucideIcon;
@@ -671,11 +683,15 @@ function SidebarRow({
   color?: string;
   iconClassName?: string;
   onClick: () => void;
+  onDragOver?: React.DragEventHandler<HTMLButtonElement>;
+  onDrop?: React.DragEventHandler<HTMLButtonElement>;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
       style={color ? ({ '--row-color': color } as CSSProperties) : undefined}
       className={`flex w-full items-center gap-2 rounded-lg px-2 py-[5px] text-left text-[11.5px] font-medium transition-colors ${
         active

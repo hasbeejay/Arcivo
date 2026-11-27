@@ -18,7 +18,7 @@ import type { LucideIcon } from 'lucide-react';
 import type { WorkspaceFolder } from '../data/workspace';
 import type { DesktopApp, FinderLocation } from './types';
 
-type MenuId = 'arcivo' | 'file' | 'go';
+type MenuId = 'arcivo' | 'file' | 'go' | 'account';
 
 interface MenuBarProps {
   activeApp: DesktopApp | null;
@@ -29,6 +29,7 @@ interface MenuBarProps {
   user: { fullName: string; email: string; avatarUrl?: string | null } | null;
   resourceCount: number;
   onOpenFinder: (location?: FinderLocation) => void;
+  onOpenNotes: () => void;
   onNewSave: () => void;
   onSettings: () => void;
   onOpenAccount: () => void;
@@ -58,6 +59,7 @@ export function MenuBar({
   user,
   resourceCount,
   onOpenFinder,
+  onOpenNotes,
   onNewSave,
   onSettings,
   onOpenAccount,
@@ -71,6 +73,7 @@ export function MenuBar({
   const [openMenu, setOpenMenu] = useState<MenuId | null>(null);
   const [now, setNow] = useState(() => new Date());
   const navRef = useRef<HTMLDivElement | null>(null);
+  const accountRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 20000);
@@ -80,7 +83,10 @@ export function MenuBar({
   useEffect(() => {
     if (!openMenu) return;
     const handlePointer = (event: PointerEvent) => {
-      if (navRef.current && !navRef.current.contains(event.target as Node)) setOpenMenu(null);
+      if (
+        !navRef.current?.contains(event.target as Node) &&
+        !accountRef.current?.contains(event.target as Node)
+      ) setOpenMenu(null);
     };
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setOpenMenu(null);
@@ -174,8 +180,8 @@ export function MenuBar({
               />
               <MenuItem
                 icon={StickyNote}
-                label="Notes"
-                onClick={() => run(() => onOpenFinder({ type: 'smart', id: 'notes' }))}
+                label="Notes App"
+                onClick={() => run(onOpenNotes)}
               />
               {folders.length > 0 && <MenuDivider />}
               {folders.slice(0, 7).map((folder) => (
@@ -247,10 +253,12 @@ export function MenuBar({
           {now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
         </span>
 
+        <div ref={accountRef} className="relative ml-1">
         <button
           type="button"
-          onClick={onOpenAccount}
+          onClick={() => setOpenMenu((current) => (current === 'account' ? null : 'account'))}
           aria-label="Open account"
+          aria-expanded={openMenu === 'account'}
           className="ml-1 flex h-[22px] w-[22px] items-center justify-center overflow-hidden rounded-full border border-app-border/15 bg-gradient-to-tr from-brand-berry-600 to-brand-coral-500 text-[8px] font-bold text-white">
           {user?.avatarUrl ? (
             <img src={user.avatarUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
@@ -258,6 +266,18 @@ export function MenuBar({
             initialsOf(user?.fullName ?? 'Arcivo')
           )}
         </button>
+        {openMenu === 'account' && (
+          <div className="absolute right-0 top-[27px] z-[70] w-[220px] rounded-xl border border-app-border/12 bg-app-panel/95 p-1 shadow-2xl backdrop-blur-2xl">
+            <div className="px-2.5 py-1.5">
+              <p className="truncate text-[11px] font-bold text-app-text">{user?.fullName ?? 'Arcivo'}</p>
+              <p className="truncate text-[9.5px] text-app-subtle">{user?.email ?? 'Account'}</p>
+            </div>
+            <MenuDivider />
+            <MenuItem icon={Settings} label="Profile & Settings…" onClick={() => run(onOpenAccount)} />
+            <MenuItem icon={LogOut} label="Log Out" onClick={() => run(onLogout)} />
+          </div>
+        )}
+        </div>
       </div>
     </header>
   );

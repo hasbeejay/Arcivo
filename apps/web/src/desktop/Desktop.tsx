@@ -35,15 +35,6 @@ interface Toast {
   tone: 'success' | 'error';
 }
 
-function initialsOf(name: string): string {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('');
-}
-
 export default function Desktop() {
   const { isDark, toggleTheme } = useTheme();
   const { accent, setAccent, wallpaper, setWallpaper } = useAppearance();
@@ -283,6 +274,20 @@ export default function Desktop() {
     }
   };
 
+  const handleMoveResource = async (resourceId: string, folderId: string) => {
+    const resource = resources.find((item) => item.id === resourceId);
+    const destination = folders.find((item) => item.id === folderId);
+    if (!resource || !destination || resource.folderId === folderId) return;
+    setResources((current) => current.map((item) => item.id === resourceId ? { ...item, folderId } : item));
+    try {
+      await updateResource(resourceId, { folderId });
+      notify('Moved to folder', destination.name);
+    } catch (error) {
+      setResources((current) => current.map((item) => item.id === resourceId ? { ...item, folderId: resource.folderId } : item));
+      notify('Could not move save', apiErrorMessage(error), 'error');
+    }
+  };
+
   const refresh = () => {
     setReloadKey((key) => key + 1);
     notify('Syncing archive', 'Pulling the latest from your Chrome extension.');
@@ -317,6 +322,7 @@ export default function Desktop() {
         user={user}
         resourceCount={resources.length}
         onOpenFinder={openNewFinder}
+        onOpenNotes={openNotes}
         onNewSave={() => openSave()}
         onSettings={() => openSettings()}
         onOpenAccount={openAccount}
@@ -367,6 +373,7 @@ export default function Desktop() {
                   onToggleFavorite={(id) => void handleToggleFavorite(id)}
                   onNewSave={openSave}
                   onCreateFolder={handleCreateFolder}
+                  onMoveResource={handleMoveResource}
                 />
               ) : item.app === 'notes' ? (
                 <NotesWindow
@@ -408,15 +415,12 @@ export default function Desktop() {
         windows={windows}
         activeApp={activeApp}
         finderOpen={finderOpen}
-        avatarUrl={user?.avatarUrl}
-        initials={initialsOf(user?.fullName ?? '')}
         onOpenFinder={openNewFinder}
         onOpenSettings={() => openSettings()}
         onOpenNotes={openNotes}
         onOpenSpotlight={() => setSpotlightOpen(true)}
         onNewSave={() => openSave()}
         onRestoreWindow={restore}
-        onOpenAccount={openAccount}
       />
 
       <Spotlight

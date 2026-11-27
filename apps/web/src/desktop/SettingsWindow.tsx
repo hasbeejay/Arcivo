@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   Check,
   Chrome,
@@ -18,6 +18,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import type { User } from '../types';
 import type { FinderLocation } from './types';
+import { accentPresets, wallpapers, type AccentId, type WallpaperId } from '../hooks/useAppearance';
 
 type SettingsTab = 'account' | 'appearance' | 'sync' | 'about';
 
@@ -31,6 +32,12 @@ interface SettingsWindowProps {
   onRefresh: () => void;
   onOpenFinder: (location?: FinderLocation) => void;
   onNewSave: () => void;
+  accent: AccentId;
+  wallpaper: WallpaperId;
+  onAccentChange: (accent: AccentId) => void;
+  onWallpaperChange: (wallpaper: WallpaperId) => void;
+  onUpdateProfile: (input: { fullName?: string; username?: string; avatarUrl?: string | null }) => Promise<void>;
+  onChangePassword: (currentPassword: string | undefined, newPassword: string) => Promise<void>;
 }
 
 const tabs: { id: SettingsTab; label: string; icon: LucideIcon }[] = [
@@ -40,13 +47,14 @@ const tabs: { id: SettingsTab; label: string; icon: LucideIcon }[] = [
   { id: 'about', label: 'About Arcivo', icon: Info },
 ];
 
-const palette = [
-  { name: 'Sage', hex: '#96B49E' },
-  { name: 'Cream', hex: '#FFCEAB' },
-  { name: 'Coral', hex: '#FF847C' },
-  { name: 'Raspberry', hex: '#E84A5F' },
-  { name: 'Ink', hex: '#2A363B' },
-];
+const wallpaperSwatches: Record<WallpaperId, string> = {
+  aurora: 'linear-gradient(130deg, #96b49e, #ffceab 55%, #ff847c)',
+  sage: 'linear-gradient(130deg, #d8e8d9, #96b49e)',
+  sunset: 'linear-gradient(130deg, #ffceab, #ff847c)',
+  dusk: 'linear-gradient(130deg, #4d786c, #2a363b)',
+  rose: 'linear-gradient(130deg, #f8d9dc, #e84a5f)',
+  paper: 'linear-gradient(130deg, #fffaf3, #e9ddc9)',
+};
 
 function initialsOf(name: string): string {
   return name
@@ -67,8 +75,39 @@ export function SettingsWindow({
   onRefresh,
   onOpenFinder,
   onNewSave,
+  accent,
+  wallpaper,
+  onAccentChange,
+  onWallpaperChange,
+  onUpdateProfile,
+  onChangePassword,
 }: SettingsWindowProps) {
   const [tab, setTab] = useState<SettingsTab>('account');
+  const [name, setName] = useState(user?.fullName ?? '');
+  const [username, setUsername] = useState(user?.username ?? user?.email.split('@')[0] ?? '');
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl ?? '');
+  const [profileBusy, setProfileBusy] = useState(false);
+  const [profileMessage, setProfileMessage] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  useEffect(() => {
+    setName(user?.fullName ?? '');
+    setUsername(user?.username ?? user?.email.split('@')[0] ?? '');
+    setAvatarUrl(user?.avatarUrl ?? '');
+  }, [user?.fullName, user?.username, user?.avatarUrl]);
+
+  const saveProfile = async () => {
+    setProfileBusy(true);
+    setProfileMessage('');
+    try {
+      await onUpdateProfile({ fullName: name.trim(), username: username.trim(), avatarUrl: avatarUrl.trim() || null });
+      setProfileMessage('Profile updated');
+    } catch (error) {
+      setProfileMessage(error instanceof Error ? error.message : 'Could not update profile');
+    } finally {
+      setProfileBusy(false);
+    }
+  };
 
   return (
     <div className={`flex min-h-0 flex-1 ${compact ? 'flex-col' : 'flex-row'}`}>
@@ -147,6 +186,44 @@ export function SettingsWindow({
             </Panel>
 
             <Panel>
+              <SectionTitle icon={UserRound} title="Profile details" />
+              <div className="mt-2.5 grid gap-2">
+                <label className="grid gap-1 text-[10px] font-semibold text-app-muted">Display name
+                  <input value={name} onChange={(event) => setName(event.target.value)} maxLength={100} className="rounded-lg border border-app-border/15 bg-app-card/60 px-2.5 py-2 text-[11px] text-app-text outline-none focus:border-app-accent/50" />
+                </label>
+                <label className="grid gap-1 text-[10px] font-semibold text-app-muted">Username
+                  <input value={username} onChange={(event) => setUsername(event.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 30))} minLength={3} maxLength={30} className="rounded-lg border border-app-border/15 bg-app-card/60 px-2.5 py-2 text-[11px] text-app-text outline-none focus:border-app-accent/50" />
+                </label>
+                <label className="grid gap-1 text-[10px] font-semibold text-app-muted">Profile picture URL
+                  <input value={avatarUrl} onChange={(event) => setAvatarUrl(event.target.value)} placeholder="https://…" className="rounded-lg border border-app-border/15 bg-app-card/60 px-2.5 py-2 text-[11px] text-app-text outline-none focus:border-app-accent/50" />
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold text-app-accent">
+                  <input type="file" accept="image/*" className="max-w-[210px] text-[9px] text-app-muted" onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (!file) return;
+                    if (file.size > 2_000_000) { setProfileMessage('Choose an image smaller than 2 MB'); return; }
+                    const reader = new FileReader();
+                    reader.onload = () => { if (typeof reader.result === 'string') setAvatarUrl(reader.result); };
+                    reader.readAsDataURL(file);
+                  }} />
+                  Upload a profile picture (max 2 MB)
+                </label>
+                <div className="flex items-center gap-2">
+                  <button type="button" disabled={profileBusy || name.trim().length < 2} onClick={() => void saveProfile()} className="rounded-lg bg-app-accent px-2.5 py-1.5 text-[10.5px] font-semibold text-white disabled:opacity-50">{profileBusy ? 'Saving…' : 'Save profile'}</button>
+                  {profileMessage && <span role="status" className="text-[10px] text-app-muted">{profileMessage}</span>}
+                </div>
+              </div>
+            </Panel>
+
+            <Panel>
+              <SectionTitle icon={LogOut} title="Change password" />
+              <div className="mt-2 grid gap-2">
+                <input type="password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} placeholder="Current password (if applicable)" className="rounded-lg border border-app-border/15 bg-app-card/60 px-2.5 py-2 text-[11px] text-app-text outline-none" />
+                <div className="flex gap-2"><input type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="New password" className="min-w-0 flex-1 rounded-lg border border-app-border/15 bg-app-card/60 px-2.5 py-2 text-[11px] text-app-text outline-none" /><button type="button" disabled={newPassword.length < 8} onClick={() => void onChangePassword(currentPassword || undefined, newPassword).then(() => { setNewPassword(''); setCurrentPassword(''); setProfileMessage('Password updated'); }).catch((error) => setProfileMessage(error instanceof Error ? error.message : 'Could not update password'))} className="rounded-lg border border-app-border/15 px-2 text-[10px] font-semibold disabled:opacity-40">Update</button></div>
+              </div>
+            </Panel>
+
+            <Panel>
               <SectionTitle icon={Layers} title="Your archive" />
               <div className="mt-2.5 grid grid-cols-2 gap-2">
                 <Stat label="Saves" value={counts.resources} />
@@ -206,16 +283,23 @@ export function SettingsWindow({
             <Panel>
               <SectionTitle icon={Sparkles} title="Arcivo palette" />
               <div className="mt-2.5 flex flex-wrap gap-2">
-                {palette.map((color) => (
-                  <div key={color.hex} className="flex items-center gap-1.5 rounded-lg border border-app-border/10 bg-app-card/40 px-2 py-1">
+                {accentPresets.map((color) => (
+                  <button type="button" aria-pressed={accent === color.id} onClick={() => onAccentChange(color.id)} key={color.id} className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 ${accent === color.id ? 'border-app-accent/50 bg-app-accent/10' : 'border-app-border/10 bg-app-card/40'}`}>
                     <span
                       className="h-3.5 w-3.5 rounded-full border border-app-border/10"
-                      style={{ backgroundColor: color.hex }}
+                      style={{ backgroundColor: color.swatch }}
                     />
                     <span className="text-[10px] font-semibold text-app-text">{color.name}</span>
-                    <span className="font-mono text-[9px] text-app-subtle">{color.hex}</span>
-                  </div>
+                    <span className="font-mono text-[9px] text-app-subtle">{color.swatch}</span>
+                  </button>
                 ))}
+              </div>
+            </Panel>
+
+            <Panel>
+              <SectionTitle icon={Palette} title="Desktop wallpaper" />
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {wallpapers.map((item) => <button key={item.id} type="button" aria-pressed={wallpaper === item.id} onClick={() => onWallpaperChange(item.id)} className={`rounded-xl border p-2 text-left ${wallpaper === item.id ? 'border-app-accent/50 bg-app-accent/10' : 'border-app-border/10 bg-app-card/40'}`}><span className="mb-1.5 block h-8 rounded-lg" style={{ background: wallpaperSwatches[item.id] }} /><span className="block text-[10px] font-semibold text-app-text">{item.name}</span><span className="block text-[9px] text-app-subtle">{item.description}</span></button>)}
               </div>
             </Panel>
 

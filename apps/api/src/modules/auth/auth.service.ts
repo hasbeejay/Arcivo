@@ -25,6 +25,7 @@ export interface PublicUser {
   id: string;
   email: string;
   fullName: string;
+  username: string | null;
   avatarUrl: string | null;
   emailVerified: boolean;
   createdAt: Date;
@@ -211,13 +212,22 @@ export class AuthService {
       throw new BadRequestException('Avatar must be an image URL or an uploaded image.');
     }
 
-    const user = await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        ...(dto.fullName !== undefined ? { fullName: dto.fullName.trim() } : {}),
-        ...(avatarUrl !== undefined ? { avatarUrl } : {}),
-      },
-    });
+    let user: User;
+    try {
+      user = await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          ...(dto.fullName !== undefined ? { fullName: dto.fullName.trim() } : {}),
+          ...(dto.username !== undefined ? { username: dto.username.trim().toLowerCase() } : {}),
+          ...(avatarUrl !== undefined ? { avatarUrl } : {}),
+        },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new ConflictException('That username is already in use.');
+      }
+      throw error;
+    }
 
     return this.toPublicUser(user);
   }
@@ -299,6 +309,7 @@ export class AuthService {
       id: user.id,
       email: user.email,
       fullName: user.fullName,
+      username: user.username,
       avatarUrl: user.avatarUrl,
       emailVerified: user.emailVerified,
       createdAt: user.createdAt,

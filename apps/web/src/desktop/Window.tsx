@@ -190,15 +190,13 @@ export function Window({
         ? { opacity: 0, transition: { duration: 0.12 } }
         : {
             opacity: [1, 1, 0],
-            scaleX: [1, 0.88, 0.16],
-            scaleY: [1, 0.92, 0.04],
+            scale: [1, 0.72, 0.14],
             x: [0, dockX * 0.35, dockX],
             y: [0, dockY * 0.3, dockY],
-            skewX: ['0deg', '-3deg', '-9deg'],
             transition: {
-              duration: 0.42,
+              duration: 0.38,
               times: [0, 0.42, 1],
-              ease: [0.55, 0.06, 0.68, 0.19] as const,
+              ease: [0.22, 0.72, 0.2, 1] as const,
             },
           },
     [prefersReducedMotion, dockX, dockY],
@@ -209,12 +207,10 @@ export function Window({
         ? { opacity: 1, transition: { duration: 0.12 } }
         : {
             opacity: 1,
-            scaleX: 1,
-            scaleY: 1,
+            scale: 1,
             x: 0,
             y: 0,
-            skewX: '0deg',
-            transition: { type: 'spring' as const, stiffness: 300, damping: 28, mass: 0.75 },
+            transition: { type: 'spring' as const, stiffness: 360, damping: 32, mass: 0.65 },
           },
     [prefersReducedMotion],
   );

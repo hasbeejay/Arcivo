@@ -5,9 +5,7 @@ import {
   Plus,
   Search,
   Settings,
-  Star,
   StickyNote,
-  UserRound,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { DesktopWindowState, FinderLocation } from './types';
@@ -20,20 +18,17 @@ interface DockAction {
   active?: boolean;
   onClick: () => void;
 }
-
 interface DockProps {
   compact: boolean;
   windows: DesktopWindowState[];
-  activeApp: 'finder' | 'settings' | null;
+  activeApp: 'finder' | 'settings' | 'notes' | null;
   finderOpen: boolean;
-  avatarUrl?: string | null;
-  initials: string;
   onOpenFinder: (location?: FinderLocation) => void;
   onOpenSettings: () => void;
+  onOpenNotes: () => void;
   onOpenSpotlight: () => void;
   onNewSave: () => void;
   onRestoreWindow: (id: string) => void;
-  onOpenAccount: () => void;
 }
 
 interface DockItem {
@@ -47,14 +42,12 @@ export function Dock({
   windows,
   activeApp,
   finderOpen,
-  avatarUrl,
-  initials,
   onOpenFinder,
   onOpenSettings,
+  onOpenNotes,
   onOpenSpotlight,
   onNewSave,
   onRestoreWindow,
-  onOpenAccount,
 }: DockProps) {
   const dockRef = useRef<HTMLDivElement | null>(null);
   const itemsRef = useRef<DockItem[]>([]);
@@ -67,7 +60,6 @@ export function Dock({
   const measure = useCallback(() => {
     const dock = dockRef.current;
     if (!dock) return;
-    const left = dock.getBoundingClientRect().left;
     const items: DockItem[] = [];
     dock.querySelectorAll<HTMLElement>('[data-dock-item]').forEach((wrapper) => {
       const button = wrapper.querySelector<HTMLButtonElement>('[data-dock-magnify]');
@@ -75,7 +67,7 @@ export function Dock({
       items.push({
         button,
         wrapper,
-        center: left + wrapper.offsetLeft + wrapper.offsetWidth / 2,
+        center: wrapper.getBoundingClientRect().left + wrapper.getBoundingClientRect().width / 2,
       });
     });
     itemsRef.current = items;
@@ -116,7 +108,7 @@ export function Dock({
     if (!hoveringRef.current) {
       hoveringRef.current = true;
       for (const item of itemsRef.current) {
-        item.button.style.transition = 'transform 70ms linear';
+          item.button.style.transition = 'transform 110ms cubic-bezier(0.2, 0.8, 0.2, 1)';
       }
     }
     if (!frameRef.current) frameRef.current = requestAnimationFrame(paint);
@@ -158,18 +150,12 @@ export function Dock({
       onClick: () => onOpenFinder(),
     },
     {
-      id: 'liked',
-      label: 'Liked',
-      icon: Star,
-      gradient: 'from-brand-coral-400 via-brand-berry-500 to-brand-berry-700',
-      onClick: () => onOpenFinder({ type: 'smart', id: 'liked' }),
-    },
-    {
       id: 'notes',
       label: 'Notes',
       icon: StickyNote,
       gradient: 'from-brand-cream-300 via-brand-caramel-400 to-brand-caramel-600',
-      onClick: () => onOpenFinder({ type: 'smart', id: 'notes' }),
+      active: activeApp === 'notes',
+      onClick: onOpenNotes,
     },
     {
       id: 'spotlight',
@@ -216,25 +202,19 @@ export function Dock({
           action={{
             id: item.id,
             label: item.title,
-            icon: item.app === 'finder' ? Folder : Settings,
+            icon: item.app === 'finder' ? Folder : item.app === 'notes' ? StickyNote : Settings,
             gradient:
               item.app === 'finder'
                 ? 'from-brand-sage-500 via-brand-teal-500 to-brand-teal-700'
-                : 'from-brand-mist-400 via-brand-ink-500 to-brand-ink-700',
+                : item.app === 'notes'
+                  ? 'from-brand-cream-300 via-brand-caramel-400 to-brand-caramel-600'
+                  : 'from-brand-mist-400 via-brand-ink-500 to-brand-ink-700',
             onClick: () => onRestoreWindow(item.id),
           }}
           compact={compact}
         />
       ))}
 
-      <DockDivider compact={compact} />
-
-      <DockAccount
-        avatarUrl={avatarUrl}
-        initials={initials}
-        onClick={onOpenAccount}
-        compact={compact}
-      />
     </div>
   );
 }
@@ -280,48 +260,6 @@ function DockButton({
           <span className="h-1 w-1 rounded-full bg-transparent" />
         )}
       </span>
-    </div>
-  );
-}
-
-function DockAccount({
-  avatarUrl,
-  initials,
-  onClick,
-  compact,
-}: {
-  avatarUrl?: string | null;
-  initials: string;
-  onClick: () => void;
-  compact: boolean;
-}) {
-  return (
-    <div data-dock-item className="animate-dock-in group relative flex flex-col items-center">
-      <span className="pointer-events-none absolute -top-8 z-20 whitespace-nowrap rounded-md border border-app-border/10 bg-app-panel/95 px-2 py-0.5 text-[10px] font-semibold text-app-text opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100">
-        Account
-      </span>
-      <button
-        type="button"
-        data-dock-magnify
-        onClick={onClick}
-        aria-label="Open account settings"
-        className={`dock-magnify flex items-center justify-center overflow-hidden rounded-[13px] border border-app-border/15 bg-gradient-to-tr from-brand-berry-600 to-brand-coral-500 text-white shadow-md active:brightness-95 ${
-          compact ? 'h-9 w-9 text-[10px]' : 'h-11 w-11 text-[11px]'
-        }`}>
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt=""
-            referrerPolicy="no-referrer"
-            className="h-full w-full object-cover"
-          />
-        ) : initials ? (
-          <span className="font-bold tracking-wide">{initials}</span>
-        ) : (
-          <UserRound className="h-5 w-5" />
-        )}
-      </button>
-      <span className="mt-0.5 flex h-1 items-center" />
     </div>
   );
 }
