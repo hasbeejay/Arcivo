@@ -365,6 +365,92 @@
     linear-gradient(158deg, #1b2428 0%, #212c31 54%, #172023 100%);
 }
 
+/* Alternate wallpapers ------------------------------------------- */
+
+.desktop-wallpaper[data-wallpaper='sage'] {
+  background:
+    radial-gradient(1100px 780px at 8% 4%, rgb(205 224 210 / 0.9), transparent 64%),
+    radial-gradient(1000px 760px at 94% 12%, rgb(236 242 233 / 0.95), transparent 60%),
+    radial-gradient(1200px 900px at 48% 114%, rgb(150 180 158 / 0.34), transparent 66%),
+    linear-gradient(158deg, #f5f9f4 0%, #eaf1e9 56%, #e0ebe1 100%);
+}
+
+.dark .desktop-wallpaper[data-wallpaper='sage'] {
+  background:
+    radial-gradient(1100px 780px at 8% 4%, rgb(52 74 62 / 0.95), transparent 64%),
+    radial-gradient(1000px 760px at 94% 12%, rgb(40 58 48 / 0.85), transparent 60%),
+    radial-gradient(1200px 900px at 48% 114%, rgb(28 42 33 / 0.9), transparent 66%),
+    linear-gradient(158deg, #17221b 0%, #1d2a21 56%, #142019 100%);
+}
+
+.desktop-wallpaper[data-wallpaper='sunset'] {
+  background:
+    radial-gradient(1100px 780px at 10% 6%, rgb(255 206 171 / 0.92), transparent 62%),
+    radial-gradient(1000px 760px at 92% 8%, rgb(255 180 173 / 0.72), transparent 60%),
+    radial-gradient(1200px 900px at 50% 115%, rgb(232 74 95 / 0.28), transparent 66%),
+    linear-gradient(158deg, #fff8ef 0%, #fdeee2 56%, #fbe2d8 100%);
+}
+
+.dark .desktop-wallpaper[data-wallpaper='sunset'] {
+  background:
+    radial-gradient(1100px 780px at 10% 6%, rgb(92 58 46 / 0.95), transparent 62%),
+    radial-gradient(1000px 760px at 92% 8%, rgb(84 42 46 / 0.85), transparent 60%),
+    radial-gradient(1200px 900px at 50% 115%, rgb(42 24 24 / 0.9), transparent 66%),
+    linear-gradient(158deg, #241a18 0%, #2a1d1c 56%, #1d1514 100%);
+}
+
+.desktop-wallpaper[data-wallpaper='dusk'] {
+  background:
+    radial-gradient(1100px 780px at 12% 4%, rgb(195 222 213 / 0.85), transparent 62%),
+    radial-gradient(1000px 760px at 92% 10%, rgb(108 153 156 / 0.42), transparent 60%),
+    radial-gradient(1200px 900px at 48% 116%, rgb(77 120 108 / 0.34), transparent 66%),
+    linear-gradient(158deg, #eef4f1 0%, #dce8e3 56%, #cfded8 100%);
+}
+
+.dark .desktop-wallpaper[data-wallpaper='dusk'] {
+  background:
+    radial-gradient(1100px 780px at 12% 4%, rgb(47 66 61 / 0.95), transparent 62%),
+    radial-gradient(1000px 760px at 92% 10%, rgb(58 83 86 / 0.8), transparent 60%),
+    radial-gradient(1200px 900px at 48% 116%, rgb(22 35 42 / 0.95), transparent 66%),
+    linear-gradient(158deg, #122027 0%, #16262d 56%, #0f1a20 100%);
+}
+
+.desktop-wallpaper[data-wallpaper='rose'] {
+  background:
+    radial-gradient(1100px 780px at 10% 4%, rgb(250 199 204 / 0.8), transparent 62%),
+    radial-gradient(1000px 760px at 92% 12%, rgb(255 229 204 / 0.8), transparent 60%),
+    radial-gradient(1200px 900px at 50% 116%, rgb(232 74 95 / 0.26), transparent 66%),
+    linear-gradient(158deg, #fdf4f3 0%, #f8e8e6 56%, #f3dddb 100%);
+}
+
+.dark .desktop-wallpaper[data-wallpaper='rose'] {
+  background:
+    radial-gradient(1100px 780px at 10% 4%, rgb(84 42 46 / 0.95), transparent 62%),
+    radial-gradient(1000px 760px at 92% 12%, rgb(92 58 64 / 0.8), transparent 60%),
+    radial-gradient(1200px 900px at 50% 116%, rgb(36 26 31 / 0.95), transparent 66%),
+    linear-gradient(158deg, #241a1f 0%, #2a1b22 56%, #1e151a 100%);
+}
+
+.desktop-wallpaper[data-wallpaper='paper'] {
+  background:
+    radial-gradient(1100px 780px at 8% 2%, rgb(255 249 243 / 0.9), transparent 64%),
+    radial-gradient(1000px 760px at 94% 10%, rgb(246 220 184 / 0.5), transparent 62%),
+    linear-gradient(158deg, #f8f3ea 0%, #f3ede2 56%, #ede5d8 100%);
+}
+
+.dark .desktop-wallpaper[data-wallpaper='paper'] {
+  background:
+    radial-gradient(1100px 780px at 8% 2%, rgb(48 60 64 / 0.9), transparent 64%),
+    radial-gradient(1000px 760px at 94% 10%, rgb(60 58 52 / 0.8), transparent 62%),
+    linear-gradient(158deg, #1b1f21 0%, #22272a 56%, #191d1f 100%);
+}
+
+/* The drifting blobs belong to the aurora wallpaper only. */
+.desktop-wallpaper:not([data-wallpaper='aurora']) .desktop-orb {
+  display: none;
+}
+
+
 .desktop-orb {
   position: absolute;
   border-radius: 9999px;

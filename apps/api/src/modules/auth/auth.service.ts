@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   ServiceUnavailableException,
@@ -11,9 +12,11 @@ import * as bcrypt from 'bcrypt';
 import { OAuth2Client } from 'google-auth-library';
 import { DEFAULT_FOLDERS } from '../../common/default-folders.js';
 import { PrismaService } from '../../database/prisma.service.js';
+import type { ChangePasswordDto } from './dto/change-password.dto.js';
 import type { GoogleLoginDto } from './dto/google-login.dto.js';
 import type { LoginDto } from './dto/login.dto.js';
 import type { RegisterDto } from './dto/register.dto.js';
+import type { UpdateProfileDto } from './dto/update-profile.dto.js';
 import type { JwtPayload } from './interfaces/jwt-payload.interface.js';
 
 const BCRYPT_ROUNDS = 10;
@@ -189,6 +192,57 @@ export class AuthService {
       throw new UnauthorizedException('This account no longer exists.');
     }
     return this.toPublicUser(user);
+  }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto): Promise<PublicUser> {
+    const existing = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!existing) {
+      throw new UnauthorizedException('This account no longer exists.');
+    }
+
+    const avatarUrl =
+      dto.avatarUrl === undefined
+        ? undefined
+        : dto.avatarUrl === null || dto.avatarUrl.trim() === ''
+          ? null
+          : dto.avatarUrl.trim();
+
+    if (avatarUrl && !/^(https?:\/\/|data:image\/)/i.test(avatarUrl)) {
+      throw new BadRequestException('Avatar must be an image URL or an uploaded image.');
+    }
+
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(dto.fullName !== undefined ? { fullName: dto.fullName.trim() } : {}),
+        ...(avatarUrl !== undefined ? { avatarUrl } : {}),
+      },
+    });
+
+    return this.toPublicUser(user);
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('This account no longer exists.');
+    }
+
+    if (user.passwordHash) {
+      const matches = dto.currentPassword
+        ? await bcrypt.compare(dto.currentPassword, user.passwordHash)
+        : false;
+      if (!matches) {
+        throw new UnauthorizedException('Current password is incorrect.');
+      }
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: await bcrypt.hash(dto.newPassword, BCRYPT_ROUNDS) },
+    });
+
+    return { updated: true };
   }
 
   async createExtensionToken(userId: string): Promise<{ token: string; expiresIn: string; user: PublicUser }> {

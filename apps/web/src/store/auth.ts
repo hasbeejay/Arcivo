@@ -19,6 +19,8 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   register: (fullName: string, email: string, password: string) => Promise<void>;
   loginWithGoogle: (credential: string) => Promise<void>;
+  updateProfile: (input: { fullName?: string; avatarUrl?: string | null }) => Promise<void>;
+  changePassword: (currentPassword: string | undefined, newPassword: string) => Promise<void>;
   logout: () => void;
   clearError: () => void;
 }
@@ -75,6 +77,18 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (error) {
       set({ busy: false, error: apiErrorMessage(error) });
     }
+  },
+
+  updateProfile: async (input) => {
+    const { data } = await api.patch<User>('/auth/profile', input);
+    set({ user: data });
+  },
+
+  changePassword: async (currentPassword, newPassword) => {
+    await api.patch('/auth/password', {
+      ...(currentPassword ? { currentPassword } : {}),
+      newPassword,
+    });
   },
 
   logout: () => {

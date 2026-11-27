@@ -5,6 +5,7 @@ import { AppService } from './app.service.js';
 import { DatabaseModule } from './database/database.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { FoldersModule } from './modules/folders/folders.module.js';
+import { NotesModule } from './modules/notes/notes.module.js';
 import { ResourcesModule } from './modules/resources/resources.module.js';
 import { ScraperModule } from './modules/scraper/scraper.module.js';
 
@@ -18,6 +19,7 @@ import { ScraperModule } from './modules/scraper/scraper.module.js';
     ScraperModule,
     AuthModule,
     FoldersModule,
+    NotesModule,
     ResourcesModule,
   ],
   controllers: [AppController],

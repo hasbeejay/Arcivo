@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Clock,
   Folder as FolderIcon,
@@ -15,6 +15,7 @@ interface DesktopIconsProps {
   counts: { all: number; liked: number; recent: number; notes: number };
   folderCounts: Record<string, number>;
   onOpenFinder: (location: FinderLocation) => void;
+  onOpenNotes: () => void;
 }
 
 interface DesktopItem {
@@ -24,78 +25,282 @@ interface DesktopItem {
   icon: LucideIcon;
   gradient?: string;
   folderColor?: string;
-  location: FinderLocation;
+  open: () => void;
 }
 
-export function DesktopIcons({ folders, counts, folderCounts, onOpenFinder }: DesktopIconsProps) {
-  const [selected, setSelected] = useState<string | null>(null);
+interface Position {
+  x: number;
+  y: number;
+}
 
-  const items: DesktopItem[] = [
-    {
-      id: 'smart-all',
-      label: 'All Saves',
-      count: counts.all,
-      icon: Layers,
-      gradient: 'from-brand-teal-700 via-brand-ink-600 to-brand-ink-800',
-      location: { type: 'smart', id: 'all' },
+const POSITION_KEY = 'arcivo.desktop-positions';
+const ITEM_WIDTH = 84;
+const ITEM_HEIGHT = 88;
+const COLUMN_STEP = 92;
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), Math.max(min, max));
+}
+
+function readPositions(): Record<string, Position> {
+  if (typeof localStorage === 'undefined') return {};
+  try {
+    const raw = localStorage.getItem(POSITION_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, Position>;
+    if (!parsed || typeof parsed !== 'object') return {};
+    const safe: Record<string, Position> = {};
+    Object.entries(parsed).forEach(([id, value]) => {
+      if (value && Number.isFinite(value.x) && Number.isFinite(value.y)) {
+        safe[id] = { x: value.x, y: value.y };
+      }
+    });
+    return safe;
+  } catch {
+    return {};
+  }
+}
+
+export function DesktopIcons({
+  folders,
+  counts,
+  folderCounts,
+  onOpenFinder,
+  onOpenNotes,
+}: DesktopIconsProps) {
+  const [selected, setSelected] = useState<string | null>(null);
+  const [positions, setPositions] = useState<Record<string, Position>>(readPositions);
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const dragRef = useRef<{
+    id: string;
+    element: HTMLButtonElement;
+    startX: number;
+    startY: number;
+    originX: number;
+    originY: number;
+    moved: boolean;
+  } | null>(null);
+  const nextPositionRef = useRef<Position | null>(null);
+  const frameRef = useRef(0);
+  const suppressClickRef = useRef(false);
+
+  const items: DesktopItem[] = useMemo(
+    () => [
+      {
+        id: 'smart-all',
+        label: 'All Saves',
+        count: counts.all,
+        icon: Layers,
+        gradient: 'from-brand-teal-700 via-brand-ink-600 to-brand-ink-800',
+        open: () => onOpenFinder({ type: 'smart', id: 'all' }),
+      },
+      {
+        id: 'smart-liked',
+        label: 'Liked',
+        count: counts.liked,
+        icon: Star,
+        gradient: 'from-brand-coral-400 via-brand-berry-500 to-brand-berry-700',
+        open: () => onOpenFinder({ type: 'smart', id: 'liked' }),
+      },
+      {
+        id: 'smart-recent',
+        label: 'Recent',
+        count: counts.recent,
+        icon: Clock,
+        gradient: 'from-brand-sage-400 via-brand-sage-600 to-brand-teal-700',
+        open: () => onOpenFinder({ type: 'smart', id: 'recent' }),
+      },
+      {
+        id: 'smart-notes',
+        label: 'Notes',
+        count: counts.notes,
+        icon: StickyNote,
+        gradient: 'from-brand-cream-300 via-brand-caramel-400 to-brand-caramel-600',
+        open: onOpenNotes,
+      },
+      ...folders.map<DesktopItem>((folder) => ({
+        id: `folder-${folder.id}`,
+        label: folder.name,
+        count: folderCounts[folder.id] ?? 0,
+        icon: FolderIcon,
+        folderColor: folder.color,
+        open: () => onOpenFinder({ type: 'folder', id: folder.id }),
+      })),
+    ],
+    [counts, folderCounts, folders, onOpenFinder, onOpenNotes],
+  );
+
+  const visibleItems = useMemo(() => items.slice(0, 14), [items]);
+
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+    const measure = () => {
+      setSize({ width: element.clientWidth, height: element.clientHeight });
+    };
+    measure();
+    const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    observer?.observe(element);
+    window.addEventListener('resize', measure);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    };
+  }, []);
+
+  const defaultPositions = useMemo(() => {
+    const rows = Math.max(1, Math.floor((size.height - 4) / ITEM_HEIGHT));
+    const next: Record<string, Position> = {};
+    visibleItems.forEach((item, index) => {
+      const column = Math.floor(index / rows);
+      const row = index % rows;
+      next[item.id] = {
+        x: Math.max(0, size.width - (column + 1) * COLUMN_STEP - 4),
+        y: row * ITEM_HEIGHT,
+      };
+    });
+    return next;
+  }, [size.height, size.width, visibleItems]);
+
+  const positionFor = useCallback(
+    (item: DesktopItem, index: number): Position => {
+      const stored = positions[item.id];
+      const fallback = defaultPositions[item.id] ?? { x: 0, y: index * ITEM_HEIGHT };
+      const position = stored ?? fallback;
+      return {
+        x: clamp(position.x, 0, Math.max(0, size.width - ITEM_WIDTH)),
+        y: clamp(position.y, 0, Math.max(0, size.height - ITEM_WIDTH)),
+      };
     },
-    {
-      id: 'smart-liked',
-      label: 'Liked',
-      count: counts.liked,
-      icon: Star,
-      gradient: 'from-brand-coral-400 via-brand-berry-500 to-brand-berry-700',
-      location: { type: 'smart', id: 'liked' },
-    },
-    {
-      id: 'smart-recent',
-      label: 'Recent',
-      count: counts.recent,
-      icon: Clock,
-      gradient: 'from-brand-sage-400 via-brand-sage-600 to-brand-teal-700',
-      location: { type: 'smart', id: 'recent' },
-    },
-    {
-      id: 'smart-notes',
-      label: 'Notes',
-      count: counts.notes,
-      icon: StickyNote,
-      gradient: 'from-brand-cream-300 via-brand-caramel-400 to-brand-caramel-600',
-      location: { type: 'smart', id: 'notes' },
-    },
-    ...folders.map<DesktopItem>((folder) => ({
-      id: `folder-${folder.id}`,
-      label: folder.name,
-      count: folderCounts[folder.id] ?? 0,
-      icon: FolderIcon,
-      folderColor: folder.color,
-      location: { type: 'folder', id: folder.id },
-    })),
-  ];
+    [defaultPositions, positions, size.height, size.width],
+  );
+
+  const beginDrag = (
+    event: React.PointerEvent<HTMLButtonElement>,
+    item: DesktopItem,
+    position: Position,
+  ) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    const element = event.currentTarget;
+    dragRef.current = {
+      id: item.id,
+      element,
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: position.x,
+      originY: position.y,
+      moved: false,
+    };
+    nextPositionRef.current = position;
+
+    const move = (moveEvent: PointerEvent) => {
+      const drag = dragRef.current;
+      if (!drag) return;
+      const dx = moveEvent.clientX - drag.startX;
+      const dy = moveEvent.clientY - drag.startY;
+      if (!drag.moved && Math.hypot(dx, dy) < 4) return;
+      if (!drag.moved) {
+        drag.moved = true;
+        drag.element.style.zIndex = '30';
+        drag.element.style.willChange = 'transform';
+      }
+      nextPositionRef.current = {
+        x: clamp(drag.originX + dx, 0, Math.max(0, size.width - ITEM_WIDTH)),
+        y: clamp(drag.originY + dy, 0, Math.max(0, size.height - ITEM_WIDTH)),
+      };
+      if (!frameRef.current) {
+        frameRef.current = requestAnimationFrame(() => {
+          frameRef.current = 0;
+          const active = dragRef.current;
+          const next = nextPositionRef.current;
+          if (!active || !next) return;
+          active.element.style.transform = `translate3d(${next.x - active.originX}px, ${
+            next.y - active.originY
+          }px, 0)`;
+        });
+      }
+    };
+
+    const finish = () => {
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current);
+        frameRef.current = 0;
+      }
+      const drag = dragRef.current;
+      const next = nextPositionRef.current;
+      dragRef.current = null;
+      nextPositionRef.current = null;
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', finish);
+      window.removeEventListener('pointercancel', finish);
+      if (!drag) return;
+
+      drag.element.style.transform = '';
+      drag.element.style.zIndex = '';
+      drag.element.style.willChange = '';
+
+      if (drag.moved && next) {
+        setPositions((current) => {
+          const updated = { ...current, [drag.id]: next };
+          try {
+            localStorage.setItem(POSITION_KEY, JSON.stringify(updated));
+          } catch {
+            // Storage can be unavailable in private mode; keep the in-memory position.
+          }
+          return updated;
+        });
+        suppressClickRef.current = true;
+        window.setTimeout(() => {
+          suppressClickRef.current = false;
+        }, 0);
+      } else {
+        setSelected(drag.id);
+      }
+    };
+
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', finish);
+    window.addEventListener('pointercancel', finish);
+  };
 
   return (
     <div
+      ref={containerRef}
       aria-label="Desktop items"
-      style={{ gridTemplateRows: 'repeat(auto-fill, 88px)', gridAutoFlow: 'column' }}
-      className="absolute bottom-[104px] right-3 top-[42px] z-[5] hidden max-w-[calc(100vw-24px)] gap-x-1 gap-y-0.5 md:grid">
-      {items.slice(0, 14).map((item) => {
+      onClick={(event) => {
+        if (event.target === event.currentTarget) setSelected(null);
+      }}
+      className="absolute bottom-[104px] right-3 top-[42px] z-[5] hidden max-w-[calc(100vw-24px)] md:block">
+      {visibleItems.map((item, index) => {
         const Icon = item.icon;
         const active = selected === item.id;
+        const position = positionFor(item, index);
         return (
           <button
             key={item.id}
             type="button"
-            onClick={() => setSelected(item.id)}
-            onDoubleClick={() => onOpenFinder(item.location)}
+            onPointerDown={(event) => beginDrag(event, item, position)}
+            onDoubleClick={() => {
+              if (!suppressClickRef.current) item.open();
+            }}
             onKeyDown={(event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
-                onOpenFinder(item.location);
+                item.open();
               }
             }}
-            title={`Double-click to open ${item.label}`}
-            className={`group flex w-[84px] flex-col items-center gap-1 rounded-xl px-1 py-1.5 outline-none transition-colors ${
-              active ? 'bg-app-panel/40 backdrop-blur-sm' : 'hover:bg-app-panel/25'
+            title={`Double-click to open ${item.label}. Drag to move.`}
+            style={{ left: position.x, top: position.y }}
+            className={`group absolute flex w-[84px] flex-col items-center gap-1 rounded-xl px-1 py-1.5 outline-none transition-colors ${
+              active ? 'bg-app-panel/40' : 'hover:bg-app-panel/25'
             } focus-visible:ring-2 focus-visible:ring-app-accent/60`}>
             <span className="relative">
               {item.folderColor ? (

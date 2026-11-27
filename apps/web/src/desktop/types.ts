@@ -7,7 +7,7 @@ export type FinderLocation =
   | { type: 'folder'; id: string }
   | { type: 'kind'; id: ResourceKind };
 
-export type DesktopApp = 'finder' | 'settings';
+export type DesktopApp = 'finder' | 'settings' | 'notes';
 
 export interface WindowBounds {
   x: number;

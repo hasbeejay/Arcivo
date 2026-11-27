@@ -19,6 +19,7 @@ export function isCompactViewport(): boolean {
 
 const ALL_SAVES: FinderLocation = { type: 'smart', id: 'all' };
 const SETTINGS_SIZE = { width: 640, height: 600 };
+const NOTES_SIZE = { width: 820, height: 580 };
 
 function availableHeight(): number {
   return window.innerHeight - MENUBAR_HEIGHT - DOCK_HEIGHT - 18;
@@ -57,6 +58,17 @@ function defaultBounds(app: DesktopApp): WindowBounds {
     };
   }
 
+  if (app === 'notes') {
+    const w = Math.min(NOTES_SIZE.width, Math.max(520, width - 160));
+    const h = Math.min(NOTES_SIZE.height, Math.max(360, availableHeight()));
+    return {
+      x: Math.max(24, Math.round((width - w) / 2)),
+      y: MENUBAR_HEIGHT + Math.max(22, Math.round((height - MENUBAR_HEIGHT - DOCK_HEIGHT - h) / 2)),
+      width: w,
+      height: h,
+    };
+  }
+
   const w = Math.min(1120, Math.max(620, width - 200));
   const h = Math.min(730, Math.max(420, availableHeight()));
   return {
@@ -78,6 +90,7 @@ export interface WindowsApi {
   openFinder: (location?: FinderLocation) => void;
   newFinderWindow: (location?: FinderLocation) => void;
   openSettings: () => void;
+  openNotes: () => void;
   focus: (id: string) => void;
   close: (id: string) => void;
   minimize: (id: string) => void;
@@ -194,6 +207,19 @@ export function useWindows({ folders }: UseWindowsOptions): WindowsApi {
         );
       }
       return [...current, makeWindow('settings', ALL_SAVES, 'Settings', z)];
+    });
+  }, [bumpZ, makeWindow]);
+
+  const openNotes = useCallback(() => {
+    const z = bumpZ();
+    setWindows((current) => {
+      const existing = current.find((item) => item.app === 'notes');
+      if (existing) {
+        return current.map((item) =>
+          item.id === existing.id ? { ...item, minimized: false, z } : item,
+        );
+      }
+      return [...current, makeWindow('notes', ALL_SAVES, 'Notes', z)];
     });
   }, [bumpZ, makeWindow]);
 
@@ -332,6 +358,7 @@ export function useWindows({ folders }: UseWindowsOptions): WindowsApi {
     openFinder,
     newFinderWindow,
     openSettings,
+    openNotes,
     focus,
     close,
     minimize,

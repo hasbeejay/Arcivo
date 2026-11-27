@@ -1,6 +1,13 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { Folder, Maximize2, Minus, Settings as SettingsIcon, X } from 'lucide-react';
+import {
+  Folder,
+  Maximize2,
+  Minus,
+  Settings as SettingsIcon,
+  StickyNote,
+  X,
+} from 'lucide-react';
 import { MENUBAR_HEIGHT, type DesktopWindowState, type WindowBounds } from './types';
 
 type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
@@ -42,7 +49,8 @@ export function Window({
   const liveBoundsRef = useRef<WindowBounds | null>(null);
   const frameRef = useRef(0);
   const prefersReducedMotion = useReducedMotion();
-  const AppIcon = app === 'finder' ? Folder : SettingsIcon;
+  const [animating, setAnimating] = useState(false);
+  const AppIcon = app === 'finder' ? Folder : app === 'notes' ? StickyNote : SettingsIcon;
 
   useEffect(() => {
     return () => stopRef.current?.();
@@ -174,13 +182,42 @@ export function Window({
     { dir: 'se', className: 'bottom-0 right-0 h-3 w-3 cursor-nwse-resize' },
   ];
 
+  const dockX = window.innerWidth / 2 - (bounds.x + bounds.width / 2);
   const dockY = window.innerHeight - 54 - (bounds.y + bounds.height / 2);
-  const minimizedAnimation = prefersReducedMotion
-    ? { opacity: 0, scale: 1, y: 0, transition: { duration: 0.12 } }
-    : { opacity: 0, scale: 0.32, y: dockY, transition: { duration: 0.34, ease: [0.4, 0, 0.85, 0.6] as const } };
-  const restoredAnimation = prefersReducedMotion
-    ? { opacity: 1, scale: 1, y: 0, transition: { duration: 0.12 } }
-    : { opacity: 1, scale: 1, y: 0, transition: { type: 'spring' as const, stiffness: 320, damping: 30, mass: 0.8 } };
+  const minimizedAnimation = useMemo(
+    () =>
+      prefersReducedMotion
+        ? { opacity: 0, transition: { duration: 0.12 } }
+        : {
+            opacity: [1, 1, 0],
+            scaleX: [1, 0.88, 0.16],
+            scaleY: [1, 0.92, 0.04],
+            x: [0, dockX * 0.35, dockX],
+            y: [0, dockY * 0.3, dockY],
+            skewX: ['0deg', '-3deg', '-9deg'],
+            transition: {
+              duration: 0.42,
+              times: [0, 0.42, 1],
+              ease: [0.55, 0.06, 0.68, 0.19] as const,
+            },
+          },
+    [prefersReducedMotion, dockX, dockY],
+  );
+  const restoredAnimation = useMemo(
+    () =>
+      prefersReducedMotion
+        ? { opacity: 1, transition: { duration: 0.12 } }
+        : {
+            opacity: 1,
+            scaleX: 1,
+            scaleY: 1,
+            x: 0,
+            y: 0,
+            skewX: '0deg',
+            transition: { type: 'spring' as const, stiffness: 300, damping: 28, mass: 0.75 },
+          },
+    [prefersReducedMotion],
+  );
 
   return (
     <motion.section
@@ -189,6 +226,8 @@ export function Window({
       aria-hidden={minimized || undefined}
       initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.96, y: 16 }}
       animate={minimized ? minimizedAnimation : restoredAnimation}
+      onAnimationStart={() => setAnimating(true)}
+      onAnimationComplete={() => setAnimating(false)}
       exit={
         prefersReducedMotion
           ? { opacity: 0 }
@@ -202,10 +241,11 @@ export function Window({
         height: bounds.height,
         zIndex: z,
         pointerEvents: minimized ? 'none' : undefined,
+        transformOrigin: minimized ? '50% 100%' : '50% 50%',
       }}
       className={`desktop-window pointer-events-auto absolute flex flex-col overflow-hidden rounded-[14px] ${
         active ? 'desktop-window-active' : 'desktop-window-idle'
-      } ${interacting ? 'desktop-window-busy' : ''} ${maximized ? 'desktop-window-maximized' : ''}`}>
+      } ${interacting || animating ? 'desktop-window-busy' : ''} ${maximized ? 'desktop-window-maximized' : ''}`}>
       <header
         onPointerDown={(event) => beginInteraction(event, 'drag')}
         onDoubleClick={() => onToggleZoom(id)}
@@ -253,7 +293,7 @@ export function Window({
 
         <span className="ml-auto flex items-center gap-1 text-app-subtle" data-no-drag>
           <span className="hidden text-[9px] font-medium uppercase tracking-[0.14em] sm:inline">
-            {app === 'finder' ? 'Finder' : 'Settings'}
+            {app === 'finder' ? 'Finder' : app === 'notes' ? 'Notes' : 'Settings'}
           </span>
         </span>
       </header>

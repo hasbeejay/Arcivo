@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { AlertCircle, CheckCircle2, Sparkles, X } from 'lucide-react';
 import { useAuthStore } from '../store/auth';
 import { useTheme } from '../hooks/useTheme';
+import { useAppearance } from '../hooks/useAppearance';
 import { SaveModal, type SaveDraft } from '../components/workspace/SaveModal';
 import { ResourceDrawer } from '../components/workspace/ResourceDrawer';
 import {
@@ -25,6 +26,7 @@ import { MenuBar } from './MenuBar';
 import { DesktopIcons } from './DesktopIcons';
 import { Spotlight } from './Spotlight';
 import { SettingsWindow } from './SettingsWindow';
+import { NotesWindow } from './NotesWindow';
 import type { FinderLocation } from './types';
 
 interface Toast {
@@ -44,8 +46,11 @@ function initialsOf(name: string): string {
 
 export default function Desktop() {
   const { isDark, toggleTheme } = useTheme();
+  const { accent, setAccent, wallpaper, setWallpaper } = useAppearance();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const updateProfile = useAuthStore((state) => state.updateProfile);
+  const changePassword = useAuthStore((state) => state.changePassword);
 
   const [resources, setResources] = useState<WorkspaceResource[]>([]);
   const [folders, setFolders] = useState<WorkspaceFolder[]>([]);
@@ -70,6 +75,7 @@ export default function Desktop() {
     openFinder,
     newFinderWindow,
     openSettings,
+    openNotes,
     focus,
     close,
     minimize,
@@ -292,7 +298,10 @@ export default function Desktop() {
 
   return (
     <div className="relative h-screen w-screen select-none overflow-hidden bg-app-bg text-app-text">
-      <div aria-hidden="true" className="desktop-wallpaper pointer-events-none absolute inset-0">
+      <div
+        aria-hidden="true"
+        data-wallpaper={wallpaper}
+        className="desktop-wallpaper pointer-events-none absolute inset-0">
         <span className="desktop-orb desktop-orb-sage" />
         <span className="desktop-orb desktop-orb-cream" />
         <span className="desktop-orb desktop-orb-coral" />
@@ -325,6 +334,7 @@ export default function Desktop() {
           counts={counts}
           folderCounts={folderCounts}
           onOpenFinder={openNewFinder}
+          onOpenNotes={openNotes}
         />
       )}
 
@@ -358,17 +368,29 @@ export default function Desktop() {
                   onNewSave={openSave}
                   onCreateFolder={handleCreateFolder}
                 />
+              ) : item.app === 'notes' ? (
+                <NotesWindow
+                  compact={compact}
+                  onNotesChanged={() => setReloadKey((key) => key + 1)}
+                  onOpenResource={setActiveId}
+                />
               ) : (
                 <SettingsWindow
                   user={user}
                   isDark={isDark}
                   compact={compact}
+                  accent={accent}
+                  wallpaper={wallpaper}
                   counts={{
                     resources: counts.all,
                     folders: counts.folders,
                     favorites: counts.liked,
                     notes: counts.notes,
                   }}
+                  onAccentChange={setAccent}
+                  onWallpaperChange={setWallpaper}
+                  onUpdateProfile={updateProfile}
+                  onChangePassword={changePassword}
                   onToggleTheme={toggleTheme}
                   onLogout={logout}
                   onRefresh={refresh}
@@ -390,6 +412,7 @@ export default function Desktop() {
         initials={initialsOf(user?.fullName ?? '')}
         onOpenFinder={openNewFinder}
         onOpenSettings={() => openSettings()}
+        onOpenNotes={openNotes}
         onOpenSpotlight={() => setSpotlightOpen(true)}
         onNewSave={() => openSave()}
         onRestoreWindow={restore}
