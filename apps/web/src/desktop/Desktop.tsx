@@ -341,6 +341,7 @@ export default function Desktop() {
           folderCounts={folderCounts}
           onOpenFinder={openNewFinder}
           onOpenNotes={openNotes}
+          onMoveResource={(resourceId, folderId) => void handleMoveResource(resourceId, folderId)}
         />
       )}
 

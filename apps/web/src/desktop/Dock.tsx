@@ -92,12 +92,14 @@ export function Dock({
     frameRef.current = 0;
     const x = mouseXRef.current;
     if (x === null) return;
-    const radius = compact ? 62 : 74;
-    const strength = compact ? 0.3 : 0.38;
+    const radius = compact ? 76 : 92;
+    const strength = compact ? 0.34 : 0.48;
     for (const item of itemsRef.current) {
-      const influence = Math.exp(-Math.pow(Math.abs(x - item.center) / radius, 2));
+      const distance = x - item.center;
+      const influence = Math.exp(-Math.pow(Math.abs(distance) / radius, 2));
       const scale = 1 + influence * strength;
-      item.button.style.transform = `scale(${scale.toFixed(4)})`;
+      const shift = Math.sign(distance) * influence * (compact ? 8 : 12);
+      item.button.style.transform = `translate3d(${shift.toFixed(2)}px, 0, 0) scale(${scale.toFixed(4)})`;
       item.wrapper.style.zIndex = String(Math.round(scale * 100));
     }
   }, [compact]);
@@ -108,7 +110,7 @@ export function Dock({
     if (!hoveringRef.current) {
       hoveringRef.current = true;
       for (const item of itemsRef.current) {
-          item.button.style.transition = 'transform 110ms cubic-bezier(0.2, 0.8, 0.2, 1)';
+        item.button.style.transition = 'transform 90ms cubic-bezier(0.2, 0.8, 0.2, 1)';
       }
     }
     if (!frameRef.current) frameRef.current = requestAnimationFrame(paint);
@@ -123,7 +125,7 @@ export function Dock({
       frameRef.current = 0;
     }
     for (const item of itemsRef.current) {
-      item.button.style.transition = 'transform 300ms cubic-bezier(0.22, 1, 0.36, 1)';
+      item.button.style.transition = 'transform 220ms cubic-bezier(0.22, 1, 0.36, 1)';
       item.button.style.transform = 'scale(1)';
       item.wrapper.style.zIndex = '1';
     }
@@ -185,12 +187,12 @@ export function Dock({
     <div
       ref={dockRef}
       aria-label="Arcivo dock"
-      className={`glass-dock absolute left-1/2 z-50 flex -translate-x-1/2 items-end rounded-[22px] shadow-[0_18px_60px_-12px_rgba(42,54,59,0.5)] ${
+      className={`glass-dock absolute left-1/2 z-50 flex max-w-[calc(100vw-24px)] -translate-x-1/2 items-end overflow-x-auto overflow-y-visible rounded-[22px] shadow-[0_18px_60px_-12px_rgba(42,54,59,0.5)] ${
         compact ? 'bottom-1.5 gap-1 px-2 pb-1.5 pt-2' : 'bottom-2.5 gap-2 px-3 pb-2 pt-2.5'
       }`}
       onMouseMove={handleMove}
       onMouseLeave={handleLeave}>
-      {primary.map((action) => (
+      {primary.filter((action) => action.id !== 'spotlight' || compact).map((action) => (
         <DockButton key={action.id} action={action} compact={compact} />
       ))}
 
@@ -238,17 +240,14 @@ function DockButton({
   const Icon = action.icon;
 
   return (
-    <div data-dock-item className="animate-dock-in group relative flex flex-col items-center">
-      <span className="pointer-events-none absolute -top-8 z-20 whitespace-nowrap rounded-md border border-app-border/10 bg-app-panel/95 px-2 py-0.5 text-[10px] font-semibold text-app-text opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100">
-        {action.label}
-      </span>
+    <div data-dock-item className="animate-dock-in group relative flex shrink-0 flex-col items-center">
       <button
         type="button"
         data-dock-magnify
         onClick={action.onClick}
         aria-label={action.label}
         title={action.label}
-        className={`dock-magnify flex items-center justify-center rounded-[13px] bg-gradient-to-tr text-white shadow-md active:brightness-95 ${
+        className={`dock-magnify flex shrink-0 items-center justify-center rounded-[13px] bg-gradient-to-tr text-white shadow-md active:brightness-95 ${
           compact ? 'h-9 w-9' : 'h-11 w-11'
         } ${action.gradient}`}>
         <Icon className={compact ? 'h-4 w-4' : 'h-[18px] w-[18px]'} strokeWidth={2.1} />

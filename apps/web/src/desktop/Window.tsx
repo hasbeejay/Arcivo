@@ -182,15 +182,22 @@ export function Window({
     { dir: 'se', className: 'bottom-0 right-0 h-3 w-3 cursor-nwse-resize' },
   ];
 
+  const minimizedScale = 0.14;
   const dockX = window.innerWidth / 2 - (bounds.x + bounds.width / 2);
-  const dockY = window.innerHeight - 54 - (bounds.y + bounds.height / 2);
+  const dockIconOffset = compact ? 30 : 40;
+  // The window collapses around its bottom edge. Account for that scale when
+  // calculating its path so its final center lands on the dock icon.
+  const dockY =
+    window.innerHeight -
+    dockIconOffset -
+    (bounds.y + bounds.height * (1 - minimizedScale / 2));
   const minimizedAnimation = useMemo(
     () =>
       prefersReducedMotion
         ? { opacity: 0, transition: { duration: 0.12 } }
         : {
             opacity: [1, 1, 0],
-            scale: [1, 0.72, 0.14],
+            scale: [1, 0.72, minimizedScale],
             x: [0, dockX * 0.35, dockX],
             y: [0, dockY * 0.3, dockY],
             transition: {

@@ -16,6 +16,7 @@ interface DesktopIconsProps {
   folderCounts: Record<string, number>;
   onOpenFinder: (location: FinderLocation) => void;
   onOpenNotes: () => void;
+  onMoveResource: (resourceId: string, folderId: string) => void;
 }
 
 interface DesktopItem {
@@ -67,8 +68,10 @@ export function DesktopIcons({
   folderCounts,
   onOpenFinder,
   onOpenNotes,
+  onMoveResource,
 }: DesktopIconsProps) {
   const [selected, setSelected] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
   const [positions, setPositions] = useState<Record<string, Position>>(readPositions);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -131,7 +134,7 @@ export function DesktopIcons({
     [counts, folderCounts, folders, onOpenFinder, onOpenNotes],
   );
 
-  const visibleItems = useMemo(() => items.slice(0, 14), [items]);
+  const visibleItems = items;
 
   useEffect(() => {
     const element = containerRef.current;
@@ -278,7 +281,7 @@ export function DesktopIcons({
       onClick={(event) => {
         if (event.target === event.currentTarget) setSelected(null);
       }}
-      className="absolute bottom-[104px] right-3 top-[42px] z-[5] hidden max-w-[calc(100vw-24px)] md:block">
+      className="absolute inset-x-3 bottom-[104px] top-[42px] z-[5] hidden md:block">
       {visibleItems.map((item, index) => {
         const Icon = item.icon;
         const active = selected === item.id;
@@ -291,16 +294,35 @@ export function DesktopIcons({
             onDoubleClick={() => {
               if (!suppressClickRef.current) item.open();
             }}
+            onDragOver={item.id.startsWith('folder-') ? (event) => {
+              event.preventDefault();
+              event.dataTransfer.dropEffect = 'move';
+              setDropTarget(item.id);
+            } : undefined}
+            onDragLeave={item.id.startsWith('folder-') ? (event) => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                setDropTarget(null);
+              }
+            } : undefined}
+            onDrop={item.id.startsWith('folder-') ? (event) => {
+              event.preventDefault();
+              setDropTarget(null);
+              const resourceId = event.dataTransfer.getData('text/arcivo-resource') || event.dataTransfer.getData('text/plain');
+              const folderId = item.id.slice('folder-'.length);
+              if (resourceId) onMoveResource(resourceId, folderId);
+            } : undefined}
             onKeyDown={(event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
                 item.open();
               }
             }}
-            title={`Double-click to open ${item.label}. Drag to move.`}
+            title={item.id.startsWith('folder-')
+              ? `Double-click to open ${item.label}. Drag to move or drop a save here.`
+              : `Double-click to open ${item.label}. Drag to move.`}
             style={{ left: position.x, top: position.y }}
             className={`group absolute flex w-[84px] flex-col items-center gap-1 rounded-xl px-1 py-1.5 outline-none transition-colors ${
-              active ? 'bg-app-panel/40' : 'hover:bg-app-panel/25'
+              dropTarget === item.id ? 'bg-app-accent/25 ring-2 ring-app-accent/60' : active ? 'bg-app-panel/40' : 'hover:bg-app-panel/25'
             } focus-visible:ring-2 focus-visible:ring-app-accent/60`}>
             <span className="relative">
               {item.folderColor ? (

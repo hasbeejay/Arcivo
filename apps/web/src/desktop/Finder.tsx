@@ -163,6 +163,7 @@ export function Finder({
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [creatingFolder, setCreatingFolder] = useState(false);
+  const [dropFolderId, setDropFolderId] = useState<string | null>(null);
 
   useEffect(() => {
     setQuery('');
@@ -324,12 +325,23 @@ export function Finder({
               label={folder.name}
               count={folderCounts[folder.id] ?? 0}
               onClick={() => onNavigate({ type: 'folder', id: folder.id })}
-              onDragOver={(event) => event.preventDefault()}
+              onDragOver={(event) => {
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
+                setDropFolderId(folder.id);
+              }}
+              onDragLeave={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                  setDropFolderId(null);
+                }
+              }}
               onDrop={(event) => {
                 event.preventDefault();
-                const resourceId = event.dataTransfer.getData('text/arcivo-resource');
+                setDropFolderId(null);
+                const resourceId = event.dataTransfer.getData('text/arcivo-resource') || event.dataTransfer.getData('text/plain');
                 if (resourceId) onMoveResource(resourceId, folder.id);
               }}
+              dropActive={dropFolderId === folder.id}
             />
           ))}
 
@@ -589,7 +601,11 @@ export function Finder({
                 className="grid gap-3"
                 style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${compact ? 210 : 218}px, 1fr))` }}>
                 {visible.map((resource, index) => (
-                  <div key={resource.id} draggable onDragStart={(event) => event.dataTransfer.setData('text/arcivo-resource', resource.id)}>
+                  <div key={resource.id} draggable onDragStart={(event) => {
+                    event.dataTransfer.effectAllowed = 'move';
+                    event.dataTransfer.setData('text/arcivo-resource', resource.id);
+                    event.dataTransfer.setData('text/plain', resource.id);
+                  }}>
                   <ResourceCard
                     resource={resource}
                     folder={folders.find((folder) => folder.id === resource.folderId)}
@@ -603,7 +619,11 @@ export function Finder({
             ) : (
               <div className="space-y-1.5">
                 {visible.map((resource, index) => (
-                  <div key={resource.id} draggable onDragStart={(event) => event.dataTransfer.setData('text/arcivo-resource', resource.id)}>
+                  <div key={resource.id} draggable onDragStart={(event) => {
+                    event.dataTransfer.effectAllowed = 'move';
+                    event.dataTransfer.setData('text/arcivo-resource', resource.id);
+                    event.dataTransfer.setData('text/plain', resource.id);
+                  }}>
                   <ResourceCard
                     resource={resource}
                     folder={folders.find((folder) => folder.id === resource.folderId)}
@@ -674,7 +694,9 @@ function SidebarRow({
   iconClassName,
   onClick,
   onDragOver,
+  onDragLeave,
   onDrop,
+  dropActive = false,
 }: {
   active: boolean;
   icon: LucideIcon;
@@ -684,16 +706,20 @@ function SidebarRow({
   iconClassName?: string;
   onClick: () => void;
   onDragOver?: React.DragEventHandler<HTMLButtonElement>;
+  onDragLeave?: React.DragEventHandler<HTMLButtonElement>;
   onDrop?: React.DragEventHandler<HTMLButtonElement>;
+  dropActive?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
       onDrop={onDrop}
       style={color ? ({ '--row-color': color } as CSSProperties) : undefined}
       className={`flex w-full items-center gap-2 rounded-lg px-2 py-[5px] text-left text-[11.5px] font-medium transition-colors ${
+        dropActive ? 'bg-app-accent/20 ring-1 ring-app-accent/50 text-app-accent' :
         active
           ? 'bg-app-accent/12 text-app-accent'
           : 'text-app-muted hover:bg-app-hover/5 hover:text-app-text'
