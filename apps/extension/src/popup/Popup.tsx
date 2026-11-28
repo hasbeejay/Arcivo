@@ -43,6 +43,8 @@ export default function Popup() {
     url: '',
   });
   const [folders, setFolders] = useState<ExtensionFolder[]>([]);
+  const [foldersLoading, setFoldersLoading] = useState(false);
+  const [foldersError, setFoldersError] = useState<string | null>(null);
   const [selectedFolder, setSelectedFolder] = useState('');
   const [tags, setTags] = useState('development, research');
   const [saved, setSaved] = useState(false);
@@ -107,28 +109,33 @@ export default function Popup() {
     }
   }, []);
 
+  const loadFolders = async (token: string) => {
+    setFoldersLoading(true);
+    setFoldersError(null);
+    try {
+      const list = await fetchFolders(token);
+      setFolders(list);
+      setSelectedFolder((current) =>
+        list.some((folder) => folder.id === current) ? current : list[0]?.id || '',
+      );
+    } catch (error) {
+      setFolders([]);
+      setSelectedFolder('');
+      setFoldersError(error instanceof Error ? error.message : 'Could not load folders.');
+    } finally {
+      setFoldersLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!session) {
       setFolders([]);
       setSelectedFolder('');
+      setFoldersError(null);
       return;
     }
 
-    let cancelled = false;
-
-    fetchFolders(session.token)
-      .then((list) => {
-        if (cancelled) return;
-        setFolders(list);
-        setSelectedFolder((current) => current || list[0]?.id || '');
-      })
-      .catch(() => {
-        if (!cancelled) setFolders([]);
-      });
-
-    return () => {
-      cancelled = true;
-    };
+    void loadFolders(session.token);
   }, [session]);
 
   const handleLogin = async (email: string, password: string) => {
@@ -276,14 +283,29 @@ export default function Popup() {
         <select
           value={selectedFolder}
           onChange={(event) => setSelectedFolder(event.target.value)}
-          className="w-full rounded-xl border border-white/10 bg-brand-ink-800 px-3 py-2 text-xs text-brand-ink-100 focus:outline-none focus:ring-1 focus:ring-brand-berry-500">
-          {folders.length === 0 && <option value="">No folders yet</option>}
+          disabled={foldersLoading || Boolean(foldersError) || folders.length === 0}
+          className="w-full rounded-xl border border-white/10 bg-brand-ink-800 px-3 py-2 text-xs text-brand-ink-100 focus:outline-none focus:ring-1 focus:ring-brand-berry-500 disabled:cursor-not-allowed disabled:opacity-60">
+          {foldersLoading && <option value="">Loading folders…</option>}
+          {!foldersLoading && foldersError && <option value="">Folders unavailable</option>}
+          {!foldersLoading && !foldersError && folders.length === 0 && <option value="">No folders yet</option>}
           {folders.map((folder) => (
             <option key={folder.id} value={folder.id}>
               {folder.name}
             </option>
           ))}
         </select>
+        {foldersError && (
+          <div className="flex items-center justify-between gap-2 text-[10px] text-brand-coral-300" role="status">
+            <span className="min-w-0 truncate">{foldersError}</span>
+            <button
+              type="button"
+              onClick={() => session && void loadFolders(session.token)}
+              disabled={foldersLoading}
+              className="shrink-0 font-semibold underline underline-offset-2 hover:text-brand-coral-200 disabled:opacity-60">
+              {foldersLoading ? 'Retrying…' : 'Retry'}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Tags Input */}
